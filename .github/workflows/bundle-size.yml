@@ -40,12 +40,21 @@ jobs:
         run: |
           cd base/frontend
           npm ci
-          npm run build
-          BASE_SIZE=$(find dist/assets -name '*.js' -type f -print0 | xargs -0 stat -c %s | awk '{s+=$1} END {print s+0}')
-          echo "BASE_SIZE=$BASE_SIZE" >> $GITHUB_ENV
+          if ! npm run build; then
+            echo "BASE_BUILD_FAILED=true" >> $GITHUB_ENV
+            echo "BASE_SIZE=0" >> $GITHUB_ENV
+          else
+            BASE_SIZE=$(find dist/assets -name '*.js' -type f -print0 | xargs -0 stat -c %s | awk '{s+=$1} END {print s+0}')
+            echo "BASE_SIZE=$BASE_SIZE" >> $GITHUB_ENV
+          fi
 
       - name: Compare Bundle Sizes
         run: |
+          if [ "$BASE_BUILD_FAILED" = "true" ]; then
+            echo "Base branch failed to build. Skipping bundle size comparison to prevent PR blockage."
+            exit 0
+          fi
+          
           echo "Base Branch JS Size: $BASE_SIZE bytes"
           echo "PR Branch JS Size: $PR_SIZE bytes"
           
