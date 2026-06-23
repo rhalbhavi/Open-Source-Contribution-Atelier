@@ -106,7 +106,7 @@ export function ProfileSettingsForm() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       addToast("Data archive downloaded successfully!", "success");
-    } catch (err: unknown) {
+    } catch {
       addToast("Failed to download data archive.", "error");
     } finally {
       setDownloading(false);
@@ -134,7 +134,7 @@ export function ProfileSettingsForm() {
           disabled={loading}
         />
         {errors.email && (
-          <p className="text-red-600 font-bold ml-2 text-sm">
+          <p role="alert" className="text-red-600 font-bold ml-2 text-sm">
             {errors.email.message}
           </p>
         )}
@@ -154,7 +154,7 @@ export function ProfileSettingsForm() {
           disabled={loading}
         />
         {errors.password && (
-          <p className="text-red-600 font-bold ml-2 text-sm">
+          <p role="alert" className="text-red-600 font-bold ml-2 text-sm">
             {errors.password.message}
           </p>
         )}
