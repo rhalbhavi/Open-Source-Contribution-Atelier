@@ -73,39 +73,42 @@ export const CommandPalette: React.FC = () => {
     }
   }, [isOpen]);
 
-  // Perform search
+  // Debounced search (300ms)
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
       return;
     }
 
-    const q = query.toLowerCase();
+    const timer = setTimeout(() => {
+      const q = query.toLowerCase();
 
-    // Simple relevance scoring
-    const scoredResults = index
-      .map((entry) => {
-        let score = 0;
-        const titleLower = entry.title.toLowerCase();
-        const contentLower = entry.content.toLowerCase();
-        const subtitleLower = entry.subtitle.toLowerCase();
+      const scoredResults = index
+        .map((entry) => {
+          let score = 0;
+          const titleLower = entry.title.toLowerCase();
+          const contentLower = entry.content.toLowerCase();
+          const subtitleLower = entry.subtitle.toLowerCase();
 
-        if (titleLower === q) score += 100;
-        else if (titleLower.includes(q)) score += 50;
+          if (titleLower === q) score += 100;
+          else if (titleLower.includes(q)) score += 50;
 
-        if (entry.type === "heading" && contentLower.includes(q)) score += 30;
-        if (entry.type === "content" && contentLower.includes(q)) score += 10;
-        if (subtitleLower.includes(q)) score += 5;
+          if (entry.type === "heading" && contentLower.includes(q)) score += 30;
+          if (entry.type === "content" && contentLower.includes(q)) score += 10;
+          if (subtitleLower.includes(q)) score += 5;
 
-        return { entry, score };
-      })
-      .filter((item) => item.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 8) // Limit to top 8 results
-      .map((item) => item.entry);
+          return { entry, score };
+        })
+        .filter((item) => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8)
+        .map((item) => item.entry);
 
-    setResults(scoredResults);
-    setSelectedIndex(0);
+      setResults(scoredResults);
+      setSelectedIndex(0);
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, [query, index]);
 
   // Handle keyboard navigation within results
