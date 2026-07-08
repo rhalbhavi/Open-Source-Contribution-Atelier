@@ -1,3 +1,4 @@
+import uuid # NEW: Added for cryptographic nonce generation
 from datetime import datetime, timezone as dt_timezone
 
 from django.contrib.auth.models import User
@@ -90,8 +91,6 @@ class MyProgressView(APIView):
             )
 
         with transaction.atomic():
-            # Lock the progress row for the full read-modify-write cycle.
-            # Concurrent requests for the same user/lesson are serialized here.
             progress, created = (
                 LessonProgress.objects.select_for_update().get_or_create(
                     user=request.user,
@@ -106,9 +105,6 @@ class MyProgressView(APIView):
                 )
             )
 
-            # Check idempotency only after the progress row is locked. This
-            # prevents two concurrent requests with the same key from both
-            # applying score and XP side effects.
             if idempotency_key:
                 sync_row = (
                     LessonProgressSync.objects.filter(
@@ -135,7 +131,6 @@ class MyProgressView(APIView):
                     )
 
             if created:
-                # Record XP only once for a newly created progress row.
                 if progress.score != 0:
                     XPEvent.objects.create(
                         user=request.user,
@@ -179,7 +174,6 @@ class MyProgressView(APIView):
                         ]
                     )
 
-                    # XP is the actual score delta, not the full replacement score.
                     xp_delta = progress.score - old_score
 
                     if xp_delta != 0:
@@ -192,8 +186,6 @@ class MyProgressView(APIView):
                             xp_delta=xp_delta,
                         )
 
-            # Store the idempotency ledger in the same transaction as the
-            # progress and XP updates so the state is committed atomically.
             if idempotency_key:
                 LessonProgressSync.objects.create(
                     user=request.user,
@@ -207,7 +199,6 @@ class MyProgressView(APIView):
                     server_updated_at=timezone.now(),
                 )
 
-            # Queue badge evaluation only after the database commit succeeds.
             transaction.on_commit(
                 lambda: async_task(
                     "apps.progress.tasks.evaluate_user_badges_task",
@@ -255,8 +246,6 @@ class BulkSyncProgressView(APIView):
                         difficulty="beginner",
                     )
 
-                # Serialize concurrent writes to the same user/lesson progress
-                # row before reading or mutating its state.
                 progress, created = (
                     LessonProgress.objects.select_for_update().get_or_create(
                         user=request.user,
@@ -679,14 +668,6 @@ class HelpRequestListCreateView(APIView):
 
 
 class IsMentor(BasePermission):
-    """
-    Grants access only to users who have a MentorProfile.
-
-    This permission is intentionally separate from `is_staff` so that
-    regular staff administrators are not automatically treated as mentors,
-    and mentors do not need elevated Django permissions.
-    """
-
     message = "You must be a designated mentor to access this resource."
 
     def has_permission(self, request, view) -> bool:
@@ -694,17 +675,6 @@ class IsMentor(BasePermission):
 
 
 class MentorHelpRequestListView(ListAPIView):
-    """
-    Read-only list of HelpRequest tickets scoped to the requesting mentor's
-    assigned lessons.
-
-    Only users with a MentorProfile may access this endpoint. The queryset
-    is automatically filtered so a mentor can never see tickets outside their
-    assigned module scope.
-
-    GET /api/progress/mentor/help-requests/
-    """
-
     serializer_class = HelpRequestSerializer
     permission_classes = [permissions.IsAuthenticated, IsMentor]
 
@@ -744,6 +714,22 @@ class ContributorTimelineView(APIView):
             }
         )
 
+# NEW: View to generate the one-time Nonce for Quizzes
+class QuizNonceView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        question_id = request.query_params.get("question_id")
+        if not question_id:
+            return Response({"error": "question_id required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        nonce = str(uuid.uuid4())
+        # Store in Redis bounded to user AND specific question. TTL = 900s (15 minutes)
+        cache_key = f"quiz_nonce_{request.user.id}_{question_id}_{nonce}"
+        cache.set(cache_key, True, timeout=900)
+
+        return Response({"nonce": nonce})
+
 
 @extend_schema_view(
     post=extend_schema(
@@ -763,6 +749,29 @@ class QuizAttemptView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
+        # NEW: Validate the cryptographic nonce
+        nonce = request.data.get("nonce")
+        question_id = request.data.get("question_id")
+
+        if not nonce or not question_id:
+            return Response(
+                {"error": "Security Error: Nonce and question_id are required."}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        cache_key = f"quiz_nonce_{request.user.id}_{question_id}_{nonce}"
+        
+        # Check if the nonce exists in Redis
+        if not cache.get(cache_key):
+            return Response(
+                {"error": "Invalid or expired session. Replay attack blocked."}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # CRITICAL: Invalidate the nonce immediately to prevent double submission
+        cache.delete(cache_key)
+
+        # Existing processing logic
         serializer = QuizAttemptSerializer(data=request.data)
         if serializer.is_valid():
             attempt = serializer.save(user=request.user)
@@ -775,8 +784,6 @@ class QuizAttemptView(APIView):
                 },
                 status=status.HTTP_201_CREATED,
             )
-        # If there are field errors, extract the first one generically to match typical client expectations
-        # Or return all errors. DRF will return a dict like {"selected_answer": ["This field is required."]}
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
@@ -964,11 +971,6 @@ class CodeSubmissionView(APIView):
 
 
 class UserProgressPDFExportView(APIView):
-    """
-    Generates and returns a PDF report of the authenticated user's
-    progress, achievements, certificates, and coding activity.
-    """
-
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -1081,9 +1083,6 @@ class LessonBookmarkView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class ReadingProgressView(APIView):
-    """
-    Saves and retrieves the user's reading position in a lesson using the Redis cache.
-    """
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -1103,6 +1102,5 @@ class ReadingProgressView(APIView):
             return Response({"error": "Lesson slug and progress required"}, status=status.HTTP_400_BAD_REQUEST)
             
         cache_key = f"reading_progress_{request.user.id}_{lesson_slug}"
-        # Store for 30 days
         cache.set(cache_key, progress, timeout=60 * 60 * 24 * 30)
         return Response({"status": "success", "progress": progress})

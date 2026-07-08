@@ -100,6 +100,8 @@ export function LessonPage() {
   const [quizFeedback, setQuizFeedback] = useState<
     "correct" | "incorrect" | null
   >(null);
+  // NEW: Cryptographic Nonce State
+  const [quizNonce, setQuizNonce] = useState<string | null>(null);
 
   // Help Request panel
   const [isHelpPanelOpen, setIsHelpPanelOpen] = useState(false);
@@ -141,25 +143,26 @@ export function LessonPage() {
       selected_answer: string;
       correct_answer: string;
       is_correct: boolean;
+      nonce: string; // NEW: Added nonce to payload
     }) => {
       return fetchApi("/progress/quiz-attempts/", {
         method: "POST",
         body: JSON.stringify(payload),
       });
     },
-    onError: (err) => {
+    onError: (err: any) => {
+      // NEW: Intercept 403 Forbidden errors triggered by Replay Attacks
+      if (err?.status === 403 || err?.message?.includes("403")) {
+        alert("Security Error: Replay attack detected or session expired. Please refresh.");
+      }
       console.error("Failed to submit quiz attempt:", err);
     },
   });
 
   // 1. Fetch modules catalog & lessons
-  // First, try to find the lesson from the backend API. If the slug doesn't exist
-  // there (e.g. curriculum.json and seed data are out of sync), fall back to
-  // constructing a basic Lesson object from curriculum.json data.
   useEffect(() => {
     setIsLoading(true);
 
-    // Fetch curriculum.json for module structure and fallback lesson data
     const curriculumPromise = fetch("/content/curriculum.json")
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -170,7 +173,6 @@ export function LessonPage() {
         return null;
       });
 
-    // Fetch lessons from the backend API
     const lessonsPromise = fetchLessonsApi();
 
     Promise.all([curriculumPromise, lessonsPromise])
@@ -181,10 +183,8 @@ export function LessonPage() {
           setModules(curriculumJson.modules);
         }
 
-        // Try to find the lesson in the backend API data first
         let found = lessonsData.find((l) => l.slug === slug);
 
-        // If not found in API, look it up in curriculum.json and build a Lesson
         if (!found && curriculumJson?.modules) {
           for (const mod of curriculumJson.modules) {
             const curriculumLesson = mod.lessons.find(
@@ -217,7 +217,6 @@ export function LessonPage() {
         }
 
         if (!found) {
-          // Lesson slug doesn't exist in either data source — redirect to dashboard
           navigate("/dashboard", { replace: true });
           return;
         }
@@ -243,10 +242,10 @@ export function LessonPage() {
     setTerminalOutput("");
     setRepoState(createInitialRepo());
 
-    // Reset Quiz state
     setCurrentQuizIndex(0);
     setSelectedOption(null);
     setQuizFeedback(null);
+    setQuizNonce(null);
 
     if (lesson.filePath) {
       fetchLessonContent(lesson.filePath).then((content) => {
@@ -256,6 +255,23 @@ export function LessonPage() {
       setMarkdownContent(`# ${lesson.title}\n\n${lesson.explanation}`);
     }
   }, [lesson]);
+
+  // NEW: Fetch Cryptographic Nonce for the current quiz question
+  useEffect(() => {
+    if (!lesson || !lesson.quizzes || lesson.quizzes.length === 0) return;
+    
+    const fetchNonce = async () => {
+      try {
+        const question_id = `${lesson.slug}-q${currentQuizIndex}`;
+        const data: any = await fetchApi(`/progress/quiz-nonce/?question_id=${question_id}`);
+        setQuizNonce(data.nonce);
+      } catch (err) {
+        console.error("Failed to fetch secure nonce", err);
+      }
+    };
+
+    fetchNonce();
+  }, [lesson, currentQuizIndex]);
 
   // 3. Scroll tracking for reading progress
   useEffect(() => {
@@ -282,7 +298,6 @@ export function LessonPage() {
     };
   }, [markdownContent]);
 
-  // Command submission handler
   const handleCommandSubmit = async (
     e: React.FormEvent | React.KeyboardEvent,
   ) => {
@@ -297,7 +312,7 @@ export function LessonPage() {
       setTerminalOutput(result.error);
       setFeedback("error");
       setShowHint(true);
-      return; // Stop processing further for invalid commands
+      return; 
     } else {
       setTerminalOutput(result.output || "");
       setRepoState(result.newState);
@@ -328,23 +343,30 @@ export function LessonPage() {
       setShowHint(true);
     }
 
-    setInput(""); // Clear input after running
+    setInput(""); 
     setIsExecuting(false);
   };
 
-  // Quiz submission handler
   const handleQuizOptionCheck = () => {
     if (selectedOption === null || !lesson || !lesson.quizzes) return;
+    
+    // NEW: Block submission if nonce hasn't loaded yet
+    if (!quizNonce) {
+      alert("Security Check: Quiz session is initializing, please wait a second and try again.");
+      return;
+    }
+
     const currentQuiz = lesson.quizzes[currentQuizIndex];
     const isCorrect = selectedOption === currentQuiz.answer;
 
-    // Send attempt to backend
+    // Send attempt to backend with the injected nonce
     quizAttemptMutation.mutate({
       question_id: `${lesson.slug}-q${currentQuizIndex}`,
       question_text: currentQuiz.question,
       selected_answer: currentQuiz.options[selectedOption] || "",
       correct_answer: currentQuiz.options[currentQuiz.answer] || "",
       is_correct: isCorrect,
+      nonce: quizNonce, // NEW: Appended
     });
 
     if (isCorrect) {
@@ -365,6 +387,7 @@ export function LessonPage() {
   const handleNextQuizQuestion = () => {
     setSelectedOption(null);
     setQuizFeedback(null);
+    setQuizNonce(null); // Clear old nonce so the useEffect can fetch a new one
     setCurrentQuizIndex((prev) => prev + 1);
   };
 
@@ -405,7 +428,6 @@ export function LessonPage() {
 
   return (
     <div className="min-h-screen pt-20 flex flex-col lg:flex-row relative">
-      {/* 1. Mobile Sidebar Toggle */}
       <div className="lg:hidden bg-white border-b-4 border-black dark:bg-[#151411] dark:border-[#2e2924] p-4 flex items-center justify-between z-[80]">
         <button
           onClick={() => setIsSidebarOpen((prev) => !prev)}
@@ -421,7 +443,6 @@ export function LessonPage() {
         </span>
       </div>
 
-      {/* Backdrop overlay — closes drawer on click-outside on mobile */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 z-[90] bg-black/40 lg:hidden"
@@ -430,7 +451,6 @@ export function LessonPage() {
         />
       )}
 
-      {/* 2. Side Course Directory Menu */}
       <aside
         id="course-sidebar"
         ref={sidebarRef}
@@ -513,9 +533,7 @@ export function LessonPage() {
         </div>
       </aside>
 
-      {/* 3. Main Reading Panel */}
       <div className="flex-1 flex flex-col max-h-[calc(100vh-80px)] overflow-hidden">
-        {/* Top scroll reading progress indicator */}
         <div className="h-2 w-full bg-surface-low border-b-2 border-black dark:bg-[#151411] dark:border-[#2e2924] relative flex-shrink-0">
           <div
             className="h-full bg-primary transition-all duration-150"
@@ -577,7 +595,6 @@ export function LessonPage() {
 
             <TextToSpeechControls content={markdownContent} />
 
-            {/* Markdown rendering logic */}
             <article className="prose max-w-none">
               <React.Suspense
                 fallback={
@@ -587,7 +604,6 @@ export function LessonPage() {
                 <MarkdownRenderer content={markdownContent} />
               </React.Suspense>
             </article>
-            {/* Report Typo Button */}
             <div className="mt-4 flex justify-end">
               <button
                 onClick={() => alert("Thanks for reporting the typo")}
@@ -597,7 +613,6 @@ export function LessonPage() {
               </button>
             </div>
 
-            {/* Exercises & validation section */}
             <div className="pt-8 space-y-6">
               {lesson.pythonExercise ? (
                 <div className="mt-8">
@@ -659,7 +674,6 @@ export function LessonPage() {
                   />
                 </div>
               ) : hasQuiz ? (
-                // QUIZ MODE RENDER
                 <div className="rounded-2xl border-4 border-black bg-white p-6 shadow-card dark:bg-[#1f1c18] dark:border-[#2e2924]">
                   <div className="flex items-center justify-between mb-4">
                     <span className="font-mono text-xs text-primary uppercase tracking-widest font-black">
@@ -682,10 +696,8 @@ export function LessonPage() {
                         const currentQuiz = lesson.quizzes![currentQuizIndex];
                         const isCorrectOption = idx === currentQuiz.answer;
 
-                        // Determine background color based on quiz state
                         let bgColor = "";
                         if (quizFeedback !== null) {
-                          // After answer submitted: show green for correct, red for incorrect
                           if (isCorrectOption) {
                             bgColor =
                               "bg-green-600 border-green-800 text-white";
@@ -697,7 +709,6 @@ export function LessonPage() {
                           }
                         }
 
-                        // Fallback to original styling when no feedback is present
                         if (!bgColor) {
                           bgColor = isSelected
                             ? "bg-accent shadow-card-sm -translate-y-0.5"
@@ -708,7 +719,7 @@ export function LessonPage() {
                           <button
                             key={idx}
                             onClick={() => {
-                              if (quizFeedback !== null) return; // Already submitted — lock selection
+                              if (quizFeedback !== null) return; 
                               setSelectedOption(idx);
                             }}
                             disabled={quizFeedback !== null}
@@ -783,7 +794,6 @@ export function LessonPage() {
                   </div>
                 </div>
               ) : hasConflict ? (
-                // CONFLICT SANDBOX MODE
                 <div className="mt-8">
                   {feedback === "correct" && (
                     <div
@@ -805,7 +815,6 @@ export function LessonPage() {
                   )}
                 </div>
               ) : (
-                // TERMINAL INTERACTIVE COMMAND MODE
                 <div
                   className={`rounded-2xl border-4 bg-surface-low p-6 shadow-card dark:bg-[#1f1c18] dark:border-[#2e2924]
                     ${
@@ -915,7 +924,6 @@ export function LessonPage() {
               )}
             </div>
 
-            {/* Course Navigation Footer */}
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between sm:gap-0 pt-10 pb-12">
               {previousLesson ? (
                 <Link
@@ -965,7 +973,6 @@ export function LessonPage() {
           </div>
         </div>
 
-        {/* Mentor Help Trigger Row */}
         <div className="border-t-4 border-black p-4 bg-white dark:bg-[#151411] dark:border-[#2e2924] flex justify-end gap-4 flex-shrink-0">
           <button
             onClick={() => setIsNotePanelOpen(!isNotePanelOpen)}
@@ -985,7 +992,6 @@ export function LessonPage() {
         </div>
       </div>
 
-      {/* Note Panel */}
       {isNotePanelOpen && lesson && (
         <NotePanel
           lessonSlug={lesson.slug}
@@ -993,7 +999,6 @@ export function LessonPage() {
         />
       )}
 
-      {/* Help support request Panel */}
       {isHelpPanelOpen && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/40">
           <button
@@ -1072,7 +1077,6 @@ export function LessonPage() {
         </div>
       )}
 
-      {/* Lesson Feedback Widget */}
       {lesson && <LessonFeedbackWidget lessonSlug={lesson.slug} />}
     </div>
   );
