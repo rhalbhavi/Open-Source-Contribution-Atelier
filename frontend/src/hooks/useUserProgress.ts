@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchApi } from "../lib/api";
 import { useLocalSync } from "./useLocalSync";
@@ -42,7 +42,7 @@ export function useUserProgress() {
   });
 
   // 3. Convenience helpers
-  const isLessonCompleted = (slug: string) => {
+  const isLessonCompleted = useCallback((slug: string) => {
     const isCompletedInBackend = progress.some(
       (p) => p.lesson_slug === slug && p.completed,
     );
@@ -56,7 +56,7 @@ export function useUserProgress() {
     } catch {
       return false;
     }
-  };
+  }, [progress]);
 
   const totalXP = useMemo(() => {
     const backendXP = progress.reduce((acc, p) => acc + p.score, 0);

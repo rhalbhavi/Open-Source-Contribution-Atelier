@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useAuth } from "../features/auth/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { fetchApi } from "../lib/api";
@@ -57,6 +57,8 @@ const FACTS = [
 
 const CONTRIBUTORS_CACHE_KEY = "github_contributors_cache";
 const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+
+const COLORS = ["#ffcc00", "#ff9500", "#ff3b30"];
 
 interface ModuleData {
   id: string;
@@ -260,10 +262,10 @@ export function DashboardPage() {
     }
   }, [user]);
 
-  const handleFinishOnboarding = () => {
+  const handleFinishOnboarding = useCallback(() => {
     localStorage.setItem("atelier_onboarded", "true");
     setShowOnboarding(false);
-  };
+  }, []);
 
   // Certificate Modal state
   const [showCertificate, setShowCertificate] = useState(false);
@@ -321,6 +323,30 @@ export function DashboardPage() {
     };
   }, [lessons, curriculumData, isLessonCompleted, user, contributorData]);
 
+  const progressChartData = useMemo(() => [
+    { name: "Completed", value: completedLessonsCount },
+    {
+      name: "Remaining",
+      value: Math.max(0, totalLessonsCount - completedLessonsCount),
+    },
+  ], [completedLessonsCount, totalLessonsCount]);
+
+  const earnedBadgesList = useMemo(() => {
+    return BADGES.filter((b) => earnedBadges.includes(b.id));
+  }, [earnedBadges]);
+
+  const leaderboardResults = useMemo(() => leaderboardData?.results || [], [leaderboardData?.results]);
+
+  const issueStatusData = useMemo(() => {
+    if (!adminData?.system_stats) return [];
+    const stats = adminData.system_stats;
+    return [
+      { name: "Open", value: stats.open_issues },
+      { name: "In Progress", value: stats.in_progress_issues },
+      { name: "Solved", value: stats.solved_issues },
+    ];
+  }, [adminData?.system_stats]);
+
   // Fetch user certificate if course is completed
   const { data: certificateData } = useQuery({
     queryKey: ["userCertificate"],
@@ -361,13 +387,6 @@ export function DashboardPage() {
     }
 
     const { system_stats, pending_prs } = adminData;
-    const leaderboardResults = leaderboardData?.results || [];
-    const issueStatusData = [
-      { name: "Open", value: system_stats.open_issues },
-      { name: "In Progress", value: system_stats.in_progress_issues },
-      { name: "Solved", value: system_stats.solved_issues },
-    ];
-    const COLORS = ["#ffcc00", "#ff9500", "#ff3b30"];
 
     return (
       <div className="max-w-7xl mx-auto px-4 pt-24 pb-12 space-y-10">
@@ -944,16 +963,7 @@ export function DashboardPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={[
-                      { name: "Completed", value: completedLessonsCount },
-                      {
-                        name: "Remaining",
-                        value: Math.max(
-                          0,
-                          totalLessonsCount - completedLessonsCount,
-                        ),
-                      },
-                    ]}
+                    data={progressChartData}
                     cx="50%"
                     cy="50%"
                     innerRadius="45%"
@@ -1414,116 +1424,7 @@ export function DashboardPage() {
                 </h4>
                 {earnedBadges.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {BADGES.filter((b) => earnedBadges.includes(b.id)).map(
-                      (badge) => (
-                        <div
-                          key={badge.id}
-                          className="flex items-center gap-2 rounded-lg border-2 border-black bg-surface-low p-2 dark:bg-[#151411] dark:border-[#2e2924]"
-                        >
-                          <span className="text-lg">{badge.icon}</span>
-                          <span className="text-xs font-bold text-text dark:text-[#f0ebe2] leading-tight">
-                            {badge.name}
-                          </span>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted dark:text-[#c4bbae]">
-                    No badges earned yet — keep going!
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="no-print mt-8 flex gap-3 print:hidden">
-              <button
-                onClick={() => window.print()}
-                className="flex items-center gap-2 rounded-lg bg-primary text-black border-4 border-black px-6 py-3 font-black text-sm shadow-card-sm hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-card-sm cursor-pointer"
-              >
-                <Printer size={16} /> Export as PDF
-              </button>
-              <button
-                onClick={() => setShowProgressReport(false)}
-                className="rounded-lg bg-white border-4 border-black px-6 py-3 font-black text-sm shadow-card-sm hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-card-sm cursor-pointer"
-              >
-                Return to Dashboard
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- MODAL 3: PROGRESS REPORT (A4 Print / Export as PDF) --- */}
-      {showProgressReport && (
-        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="certificate-printable w-full max-w-2xl bg-white rounded-[2rem] border-8 border-black p-8 sm:p-10 relative shadow-card print:border-none print:shadow-none print:p-0 dark:bg-[#1f1c18] dark:border-[#2e2924]">
-            <button
-              onClick={() => setShowProgressReport(false)}
-              className="no-print absolute top-4 right-4 bg-white border-2 border-black p-2 rounded-full hover:bg-surface-low transition-colors print:hidden"
-            >
-              <X size={16} />
-            </button>
-
-            <div className="space-y-6">
-              <div className="text-center">
-                <div className="text-5xl mb-2">📊</div>
-                <h2 className="text-3xl font-black uppercase tracking-tight text-text dark:text-[#f0ebe2]">
-                  Progress Report
-                </h2>
-                <p className="font-mono text-xs text-primary uppercase tracking-widest font-black mt-1">
-                  The Open Source Contribution Atelier
-                </p>
-                <h3 className="text-xl font-black text-text mt-3 dark:text-[#f0ebe2]">
-                  {user?.username}
-                </h3>
-                <p className="text-xs text-muted dark:text-[#c4bbae] mt-1">
-                  Generated on {new Date().toLocaleDateString()}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-b border-black/10 py-4">
-                <div className="text-center">
-                  <span className="block text-2xl font-black text-text dark:text-[#f0ebe2]">
-                    {completionPercentage}%
-                  </span>
-                  <span className="block text-[10px] uppercase font-bold text-muted dark:text-[#c4bbae]">
-                    Curriculum
-                  </span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-2xl font-black text-text dark:text-[#f0ebe2]">
-                    {completedLessonsCount}/{totalLessonsCount}
-                  </span>
-                  <span className="block text-[10px] uppercase font-bold text-muted dark:text-[#c4bbae]">
-                    Lessons
-                  </span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-2xl font-black text-text dark:text-[#f0ebe2]">
-                    {personal_stats?.total_xp ?? 0}
-                  </span>
-                  <span className="block text-[10px] uppercase font-bold text-muted dark:text-[#c4bbae]">
-                    XP
-                  </span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-2xl font-black text-text dark:text-[#f0ebe2]">
-                    {personal_stats?.streak_days ?? 0}
-                  </span>
-                  <span className="block text-[10px] uppercase font-bold text-muted dark:text-[#c4bbae]">
-                    Day Streak
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-black text-xs uppercase tracking-wider text-muted dark:text-[#c4bbae] mb-3">
-                  Badges Earned ({earnedBadges.length}/{BADGES.length})
-                </h4>
-                {earnedBadges.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {BADGES.filter((b) => earnedBadges.includes(b.id)).map(
+                    {earnedBadgesList.map(
                       (badge) => (
                         <div
                           key={badge.id}
