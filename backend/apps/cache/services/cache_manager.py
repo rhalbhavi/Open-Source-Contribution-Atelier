@@ -202,8 +202,10 @@ class CacheManager:
                         parent = getattr(target, field.name)
                         if parent:
                             self.invalidate_dependencies(parent)
-                    except:
-                        pass
+                    except Exception:
+                        logger.exception(
+                            "Failed to invalidate parent cache dependency."
+                        )
 
     def warm_cache(self, model_name: str):
         """
@@ -392,10 +394,12 @@ if (
 try:
     manager = CacheManager()
     manager.invalidate_dependencies(instance)
-except Exception:
-    # Silently ignore errors during migrations/cache invalidation
-    pass
-        pass
+except Exception as e:
+    logger.warning(
+        "Cache invalidation failed after saving %s: %s",
+        instance,
+        e,
+    )
 
 
 @receiver(post_delete)
@@ -423,10 +427,12 @@ if sender._meta.app_label in [
 try:
     manager = CacheManager()
     manager.invalidate_dependencies(instance)
-except Exception:
-    # Silently ignore cache invalidation errors
-    pass
-        pass
+except Exception as e:
+    logger.warning(
+        "Cache invalidation failed after deleting %s: %s",
+        instance,
+        e,
+    )
 
 
 @receiver(m2m_changed)
@@ -440,8 +446,12 @@ def invalidate_cache_on_m2m_change(
         manager = CacheManager()
         try:
             manager.invalidate_dependencies(instance)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(
+                "Cache invalidation failed for M2M change on %s: %s",
+                instance,
+                e,
+            )
 
         # Also invalidate for related objects
         for pk in pk_set:
@@ -449,7 +459,11 @@ def invalidate_cache_on_m2m_change(
                 related = model.objects.get(pk=pk)
                 try:
                     manager.invalidate_dependencies(related)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning(
+                        "Cache invalidation failed for related object with pk=%s: %s",
+                        pk,
+                        e,
+                    )
             except model.DoesNotExist:
                 pass
