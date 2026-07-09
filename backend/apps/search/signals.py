@@ -23,22 +23,24 @@ def _safe_async(task_path, **kwargs):
         )
 
 
-# --- Lesson Indexing ---
+# ---------------------------------------------------------------------------
+# Lesson Indexing
+# ---------------------------------------------------------------------------
 
 
 @receiver(post_save, sender=Lesson)
 def index_lesson(sender, instance, **kwargs):
     if "test" in sys.argv or any("pytest" in arg for arg in sys.argv):
         return
-    title = instance.title
-    body_text = f"{instance.summary} {instance.content}"
     _safe_async(
         "apps.search.tasks.index_model_for_search",
         app_label=sender._meta.app_label,
         model_name=sender._meta.model_name,
         object_id=instance.pk,
-        title=title,
-        body_text=body_text,
+        title=instance.title,
+        description=instance.summary,
+        tags=instance.category,
+        body_text=instance.content,
     )
 
 
@@ -54,7 +56,9 @@ def remove_lesson_index(sender, instance, **kwargs):
     )
 
 
-# --- User Indexing ---
+# ---------------------------------------------------------------------------
+# User Indexing
+# ---------------------------------------------------------------------------
 
 
 @receiver(post_save, sender=User)
@@ -71,15 +75,15 @@ def index_user(sender, instance, **kwargs):
         )
         return
 
-    title = instance.username
-    body_text = instance.email
     _safe_async(
         "apps.search.tasks.index_model_for_search",
         app_label=sender._meta.app_label,
         model_name=sender._meta.model_name,
         object_id=instance.pk,
-        title=title,
-        body_text=body_text,
+        title=instance.username,
+        description=instance.email,
+        tags="",
+        body_text=instance.email,
     )
 
 
@@ -95,22 +99,24 @@ def remove_user_index(sender, instance, **kwargs):
     )
 
 
-# --- Challenge Indexing ---
+# ---------------------------------------------------------------------------
+# Challenge Indexing
+# ---------------------------------------------------------------------------
 
 
 @receiver(post_save, sender=Challenge)
 def index_challenge(sender, instance, **kwargs):
     if "test" in sys.argv or any("pytest" in arg for arg in sys.argv):
         return
-    title = instance.title
-    body_text = instance.summary
     _safe_async(
         "apps.search.tasks.index_model_for_search",
         app_label=sender._meta.app_label,
         model_name=sender._meta.model_name,
         object_id=instance.pk,
-        title=title,
-        body_text=body_text,
+        title=instance.title,
+        description=instance.summary,
+        tags=instance.difficulty,
+        body_text=instance.summary,
     )
 
 
@@ -126,22 +132,24 @@ def remove_challenge_index(sender, instance, **kwargs):
     )
 
 
-# --- Issue Indexing ---
+# ---------------------------------------------------------------------------
+# Issue Indexing
+# ---------------------------------------------------------------------------
 
 
 @receiver(post_save, sender=Issue)
 def index_issue(sender, instance, **kwargs):
     if "test" in sys.argv or any("pytest" in arg for arg in sys.argv):
         return
-    title = instance.title
-    body_text = instance.description
     _safe_async(
         "apps.search.tasks.index_model_for_search",
         app_label=sender._meta.app_label,
         model_name=sender._meta.model_name,
         object_id=instance.pk,
-        title=title,
-        body_text=body_text,
+        title=instance.title,
+        description=instance.description,
+        tags=instance.status,
+        body_text=instance.description,
     )
 
 
