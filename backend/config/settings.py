@@ -158,6 +158,7 @@ INSTALLED_APPS = [
     "graphene_django",
     "apps.moderation",
     "apps.events",
+    "apps.portfolio",
     "django_q",
 ]
 
