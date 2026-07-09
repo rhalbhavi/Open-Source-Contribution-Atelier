@@ -546,3 +546,6 @@ CURRICULUM_JSON_PATH = os.getenv(
         ).resolve()
     ),
 )
+
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_STORE_EAGER_RESULT = True
