@@ -33,6 +33,7 @@ import { JSSandbox } from "../components/ui/JSSandbox";
 import { InteractiveDebugger } from "../components/ui/InteractiveDebugger";
 import { TextToSpeechControls } from "../components/ui/TextToSpeechControls";
 import { ReadingProgressTracker } from "../components/ui/ReadingProgressTracker";
+import { lessonPluginRegistry } from "../plugins/LessonPluginRegistry";
 
 import {
   createInitialRepo,
@@ -614,7 +615,27 @@ export function LessonPage() {
             </div>
 
             <div className="pt-8 space-y-6">
-              {lesson.pythonExercise ? (
+              {(() => {
+                const plugin = lessonPluginRegistry.getPluginForLesson(lesson);
+                if (plugin) {
+                  const PluginComponent = plugin.component;
+                  return (
+                    <div className="mt-8">
+                      <PluginComponent 
+                        lesson={lesson} 
+                        onSuccess={(score) => {
+                          syncProgress({
+                            lesson_slug: lesson.slug,
+                            score: score || lesson.points || 20,
+                            completed: true,
+                          });
+                        }} 
+                      />
+                    </div>
+                  );
+                }
+                
+                return lesson.pythonExercise ? (
                 <div className="mt-8">
                   {new URLSearchParams(window.location.search).get(
                     "session",
@@ -921,9 +942,12 @@ export function LessonPage() {
                     )}
                   </form>
                 </div>
-              )}
+              );
+              })()}
             </div>
 
+
+            {/* Course Navigation Footer */}
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between sm:gap-0 pt-10 pb-12">
               {previousLesson ? (
                 <Link
@@ -1077,7 +1101,8 @@ export function LessonPage() {
         </div>
       )}
 
-      {lesson && <LessonFeedbackWidget lessonSlug={lesson.slug} />}
+      {/* Lesson Feedback Widget */}
+      {lesson && isCompleted && (<LessonFeedbackWidget lessonSlug={lesson.slug} />)}
     </div>
   );
 }
