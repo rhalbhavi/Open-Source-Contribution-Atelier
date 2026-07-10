@@ -20,19 +20,26 @@ def send_weekly_progress_summary():
     from apps.progress.services.digest_service import WeeklyDigestService
 
     # Process active users in chunks who opted in for the digest
-    users = User.objects.filter(is_active=True, profile__receive_weekly_digest=True).iterator(chunk_size=100)
+    users = User.objects.filter(
+        is_active=True, profile__receive_weekly_digest=True
+    ).iterator(chunk_size=100)
 
     for user in users:
         # Generate context using the new service
         context = WeeklyDigestService.get_user_digest_context(user)
 
-        if context["lessons_completed"] > 0 or len(context["badges_earned"]) > 0 or context["xp_earned"] > 0:
+        if (
+            context["lessons_completed"] > 0
+            or len(context["badges_earned"]) > 0
+            or context["xp_earned"] > 0
+        ):
             payload = {
                 "template_id": "weekly_progress_summary",
                 "recipients": [user.email],
                 "data": context,
             }
             async_task("apps.notifications.tasks.send_bulk_email", payload)
+
 
 
 def evaluate_achievements_task(user_id):
@@ -159,3 +166,14 @@ def analyze_submission_plagiarism(submission_id: int):
             )
             # Stop after first match as tests expect a single report
             break
+
+
+def update_leaderboard_task(user_id, username, xp_delta):
+    """
+    Background task to update Redis leaderboard and broadcast WebSocket event.
+    """
+    try:
+        from apps.progress.services.leaderboard_service import LeaderboardService
+        LeaderboardService.update_user_xp(user_id, username, xp_delta)
+    except Exception as exc:
+        logger.error("Failed to update leaderboard in background task: %s", exc)
