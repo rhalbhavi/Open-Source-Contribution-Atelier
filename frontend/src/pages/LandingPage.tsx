@@ -6,7 +6,16 @@ import { useAuth } from "../features/auth/AuthContext";
 import { useTheme } from "../hooks/useTheme";
 import OrganizationsGrid from "../components/OrganizationsGrid";
 
-import { useTranslation } from "react-i18next";
+declare const require: any;
+
+// react-i18next may be optional in some environments. Import with a safe runtime fallback.
+let useTranslation: any;
+try {
+  useTranslation = require("react-i18next").useTranslation;
+} catch {
+  // Fallback: provide a minimal hook that returns identity translator
+  useTranslation = () => ({ t: (s: string) => s });
+}
 
 const githubAuthUrl =
   import.meta.env.VITE_GITHUB_OAUTH_URL ||
@@ -130,9 +139,9 @@ export function LandingPage() {
           </div>
 
           <h2 className="text-3xl font-black mb-6 text-center text-text dark:text-[#f0ebe2]">
-             {authRole === "student"
-                ? "Start Your First Contribution"
-                : t("landing.maintainer_login")}
+            {authRole === "student"
+              ? t("landing.enter_sandbox")
+              : t("landing.maintainer_login")}
           </h2>
 
           {error && (
