@@ -135,7 +135,12 @@ class UserProfile(models.Model):
         on_delete=models.CASCADE,
         related_name="user_profile",  # Changed from "profile" to "user_profile"
     )
-    avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
+    avatar = models.ImageField(
+        upload_to="avatars/",
+        null=True,
+        blank=True,
+        max_length=255,
+    )
     cover_image = models.ImageField(upload_to="covers/", null=True, blank=True)
     last_password_change = models.DateTimeField(auto_now_add=True)
     timezone = models.CharField(
