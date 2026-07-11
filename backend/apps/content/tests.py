@@ -652,13 +652,10 @@ def test_seed_lessons_default_format_is_text():
     call_command("seed_lessons", stdout=out)
     output = out.getvalue()
 
-    # Should not be JSON (would fail to parse or raise)
-    try:
-        import json
+    import json
 
+    # Should not be JSON (would fail to parse)
+    with pytest.raises(json.JSONDecodeError):
         json.loads(output)
-        # If it parses as JSON, it should at least have text markers
-        assert "✓" in output or "~" in output
-    except json.JSONDecodeError:
-        # Expected: output is human-readable text, not JSON
-        assert "✓" in output or "Seeding complete" in output
+    # Should contain text markers
+    assert "✓" in output or "~" in output or "Seeding complete" in output
