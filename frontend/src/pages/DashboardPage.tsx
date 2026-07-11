@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchApi } from "../lib/api";
 import { Link } from "react-router-dom";
 import { SocialShareButtons } from "../components/ui/SocialShareButtons";
+import { ProgressRing } from '../components/ProgressRing';
 import SkeletonAdminDashboard from "../components/ui/skeletons/SkeletonAdminDashboard";
 import SkeletonContributorDashboard from "../components/ui/skeletons/SkeletonContributorDashboard";
 import { useRef } from "react";
@@ -836,6 +837,11 @@ export function DashboardPage() {
             >
               View Full Learning Path 🗺️
             </Link>
+          </div>
+
+          <div className="module-card">
+            <h4>Git Basics</h4>
+            <ProgressRing percentage={75} label="3/4 lessons" />
           </div>
 
           <div className="grid gap-6 md:grid-cols-[1.5fr_1fr] pt-4 border-t-2 border-dashed border-black/10 dark:border-white/10">
