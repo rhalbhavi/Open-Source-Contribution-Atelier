@@ -622,6 +622,7 @@ class PasswordResetValidateTokenView(APIView):
                 token=token_value,
                 is_used=False,
             )
+
         except PasswordResetToken.DoesNotExist:
             return Response({
                 'valid': False,
