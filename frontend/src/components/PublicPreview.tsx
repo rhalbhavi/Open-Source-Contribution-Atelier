@@ -54,9 +54,13 @@ export function PublicPreview(){
                 <span className="terminal-status">⚡ Ready</span>
               </div>
               <div className="terminal-body">
-                <div className="terminal-line">$ git init</div>
+                <div className="terminal-line">
+                  <span className="prompt">$</span>git init
+                </div>
                 <div className="terminal-line output">✅ Initialized empty Git repository</div>
-                <div className="terminal-line">$ echo "Hello World" {'>'} README.md</div>
+                <div className="terminal-line">
+                  <span className="prompt">$</span>echo "Hello World" {'>'} README.md
+                </div>
                 <div className="terminal-line output">✅ Created README.md</div>
                 <div className="terminal-line input">
                   <span className="prompt">$</span>
@@ -67,11 +71,6 @@ export function PublicPreview(){
             <p className="demo-note">💡 This is a preview. Full sandbox available after sign up</p>
           </div>
         )}
-      </div>
-
-      <div className="preview-footer">
-        <p>Ready to start learning?</p>
-        <a href="/signup" className="cta-btn">🚀 Create Free Account</a>
       </div>
     </div>
   );
