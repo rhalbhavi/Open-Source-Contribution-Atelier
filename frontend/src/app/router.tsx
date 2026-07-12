@@ -173,7 +173,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login?expired=true" replace />;
+    const wasLoggedOut = sessionStorage.getItem("userLoggedOut") === "true";
+    sessionStorage.removeItem("userLoggedOut");
+    return <Navigate to={wasLoggedOut ? "/login" : "/login?expired=true"} replace />;
   }
 
   return <>{children}</>;

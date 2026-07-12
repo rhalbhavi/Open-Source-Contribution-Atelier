@@ -84,7 +84,7 @@ export function ChatContainer() {
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto min-h-0 space-y-3 px-1 mb-2">
+        <div className="flex-1 overflow-y-auto min-h-0 space-y-3 px-1 mb-2 custom-scrollbar">
           {messages.length === 0 && (
             <p className="text-center text-sm text-muted py-8">
               No messages yet. Start the conversation!

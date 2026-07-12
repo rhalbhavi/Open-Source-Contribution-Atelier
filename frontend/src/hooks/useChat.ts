@@ -106,6 +106,10 @@ export function useChat({ roomId, token, username }: UseChatOptions) {
           }
         }
 
+        if (plaintext === "[Encrypted message - key not found]") {
+          return;
+        }
+
         setMessages((prev) => {
           messageIdRef.current += 1;
           return [
