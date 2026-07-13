@@ -110,6 +110,12 @@ const ProfileSettingsPage = lazy(() =>
   })),
 );
 
+const UserProfilePage = lazy(() =>
+  import("../pages/UserProfilePage").then((module) => ({
+    default: module.UserProfilePage,
+  })),
+);
+
 const LeaderboardPage = lazy(() =>
   import("../pages/LeaderboardPage").then((module) => ({
     default: module.LeaderboardPage,
@@ -452,6 +458,11 @@ export function AppRouter() {
                 <ProfileSettingsPage />
               </ProtectedRoute>
             }
+          />
+
+          <Route
+            path="/u/:username"
+            element={<UserProfilePage />}
           />
         </Route>
 

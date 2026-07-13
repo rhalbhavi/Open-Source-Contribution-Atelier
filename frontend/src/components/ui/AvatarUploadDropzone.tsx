@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { UploadCloud, X } from "lucide-react";
 import { useToast } from "../../features/ui/ToastContext";
+import { getMediaUrl } from "../../lib/api";
 
 interface AvatarUploadDropzoneProps {
   currentAvatarUrl?: string | null;
@@ -13,16 +14,14 @@ export function AvatarUploadDropzone({
 }: AvatarUploadDropzoneProps) {
   const [dragActive, setDragActive] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(
-    currentAvatarUrl || null,
+    getMediaUrl(currentAvatarUrl) || null,
   );
   const inputRef = useRef<HTMLInputElement>(null);
   const { addToast } = useToast();
 
   useEffect(() => {
-    if (currentAvatarUrl && !previewUrl) {
-      setPreviewUrl(currentAvatarUrl);
-    }
-  }, [currentAvatarUrl, previewUrl]);
+    setPreviewUrl(getMediaUrl(currentAvatarUrl) || null);
+  }, [currentAvatarUrl]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();

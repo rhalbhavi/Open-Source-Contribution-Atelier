@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { ProfileSettingsForm } from "../features/auth/ProfileSettingsForm";
-import { ActivityHeatmap } from "../components/ui/ActivityHeatmap";
 import { useAuth } from "../features/auth/AuthContext";
 import { getMediaUrl } from "../lib/api";
 import { Github, Linkedin, Twitter, Award, BookOpen, Calendar, MapPin, Copy, Check, Eye } from "lucide-react";
@@ -9,6 +8,7 @@ export function ProfileSettingsPage() {
   const { user } = useAuth();
   const [previewData, setPreviewData] = useState<any>({});
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   // Manage avatar object URL for previewing unsaved files
@@ -21,6 +21,17 @@ export function ProfileSettingsPage() {
       setAvatarPreview(null);
     }
   }, [previewData.avatarFile]);
+
+  // Manage cover object URL for previewing unsaved files
+  useEffect(() => {
+    if (previewData.coverFile) {
+      const objectUrl = URL.createObjectURL(previewData.coverFile);
+      setCoverPreview(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    } else {
+      setCoverPreview(null);
+    }
+  }, [previewData.coverFile]);
 
   const handleCopyLink = () => {
     const profileLink = `${window.location.origin}/u/${user?.username}`;
@@ -68,6 +79,27 @@ export function ProfileSettingsPage() {
                   {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
                   <span>{copied ? "Copied!" : "Share Link"}</span>
                 </button>
+              )}
+            </div>
+
+            {/* COVER IMAGE */}
+            <div className="h-28 w-full border-4 border-black rounded-xl overflow-hidden bg-slate-100 mb-6 relative">
+              {coverPreview ? (
+                <img
+                  src={coverPreview}
+                  alt="Cover preview"
+                  className="w-full h-full object-cover"
+                />
+              ) : user?.cover_image_url ? (
+                <img
+                  src={getMediaUrl(user.cover_image_url) || ""}
+                  alt="User cover"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-60 flex items-center justify-center font-bold text-white text-xs uppercase tracking-wider">
+                  No Cover Image
+                </div>
               )}
             </div>
 
@@ -148,10 +180,6 @@ export function ProfileSettingsPage() {
         </div>
       </div>
 
-      {/* ACTIVITY HEATMAP SECTION */}
-      <div className="max-w-3xl lg:max-w-none mt-8 rounded-2xl border-4 border-black bg-white dark:bg-[#151411] p-8 shadow-card overflow-hidden">
-        <ActivityHeatmap />
-      </div>
     </div>
   );
 }

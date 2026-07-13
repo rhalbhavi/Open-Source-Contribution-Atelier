@@ -88,7 +88,7 @@ export default function PortfolioPage() {
   };
 
   const copyShareableLink = () => {
-    const link = `${window.location.origin}/profile/${user?.username}`;
+    const link = `${window.location.origin}/u/${user?.username}`;
     navigator.clipboard.writeText(link);
     toast.success("Public profile verification link copied!");
   };
@@ -327,7 +327,7 @@ export default function PortfolioPage() {
                 <input
                   type="text"
                   readOnly
-                  value={`[![Verified Profile](https://img.shields.io/badge/Atelier-Verified_Developer-C3C0FF?logo=github&style=flat-square)](${window.location.origin}/profile/${user?.username})`}
+                  value={`[![Verified Profile](https://img.shields.io/badge/Atelier-Verified_Developer-C3C0FF?logo=github&style=flat-square)](${window.location.origin}/u/${user?.username})`}
                   className="w-full p-1.5 border border-black/15 bg-white text-slate-600 dark:bg-[#121216] dark:text-slate-300 dark:border-white/10 rounded font-mono text-[9px] focus:outline-none"
                   onClick={(e) => (e.target as HTMLInputElement).select()}
                 />

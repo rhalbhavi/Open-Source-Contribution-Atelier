@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, Image as ImageIcon } from "lucide-react";
 import { useToast } from "../../features/ui/ToastContext";
+import { getMediaUrl } from "../../lib/api";
 
 interface CoverUploadDropzoneProps {
   currentCoverUrl?: string | null;
@@ -13,16 +14,14 @@ export function CoverUploadDropzone({
 }: CoverUploadDropzoneProps) {
   const [dragActive, setDragActive] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(
-    currentCoverUrl || null,
+    getMediaUrl(currentCoverUrl) || null,
   );
   const inputRef = useRef<HTMLInputElement>(null);
   const { addToast } = useToast();
 
   useEffect(() => {
-    if (currentCoverUrl && !previewUrl) {
-      setPreviewUrl(currentCoverUrl);
-    }
-  }, [currentCoverUrl, previewUrl]);
+    setPreviewUrl(getMediaUrl(currentCoverUrl) || null);
+  }, [currentCoverUrl]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
