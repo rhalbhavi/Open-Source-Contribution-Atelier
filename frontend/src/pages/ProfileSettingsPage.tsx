@@ -52,12 +52,12 @@ export function ProfileSettingsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         {/* LEFT COLUMN: Settings Form (3/5 width) */}
-        <div className="lg:col-span-3 space-y-8">
-          <div className="rounded-2xl border-4 border-black bg-[#E8F0FE] p-8 shadow-card dark:border-[#7790bf] dark:bg-[linear-gradient(145deg,#254478,#182235_62%,#171411)]">
-            <h2 className="mb-6 text-2xl font-bold uppercase tracking-tight text-black dark:text-white flex items-center gap-3">
-              <span className="text-3xl">⚙️</span> Settings Form
+        <div className="lg:col-span-3 space-y-6">
+          <div className="rounded-xl border-2 border-black bg-[#E8F0FE] p-6 shadow-sm dark:border-[#7790bf] dark:bg-[linear-gradient(145deg,#254478,#182235_62%,#171411)]">
+            <h2 className="mb-4 text-lg font-bold uppercase tracking-tight text-black dark:text-white flex items-center gap-2">
+              <span className="text-xl">⚙️</span> Settings Form
             </h2>
             <ProfileSettingsForm onChange={setPreviewData} />
           </div>
@@ -65,25 +65,25 @@ export function ProfileSettingsPage() {
 
         {/* RIGHT COLUMN: Live Profile Preview (2/5 width) */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="sticky top-28 rounded-2xl border-4 border-black bg-white p-6 shadow-card dark:bg-[#121218] dark:border-[#3a3a45] flex flex-col">
-            <div className="flex items-center justify-between mb-6 pb-3 border-b-2 border-dashed border-gray-200 dark:border-gray-800">
-              <h3 className="text-lg font-black uppercase text-black dark:text-white flex items-center gap-2">
-                <Eye size={20} className="text-primary" /> Live Preview
+          <div className="sticky top-28 rounded-xl border-2 border-black bg-white p-5 shadow-sm dark:bg-[#121218] dark:border-[#3a3a45] flex flex-col">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-dashed border-gray-250 dark:border-gray-800">
+              <h3 className="text-sm font-bold uppercase text-black dark:text-white flex items-center gap-1.5">
+                <Eye size={16} className="text-primary" /> Live Preview
               </h3>
               {user?.username && (
                 <button
                   onClick={handleCopyLink}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold border-2 border-black rounded-lg bg-surface hover:bg-black hover:text-white transition-all dark:bg-[#1c1c24] dark:border-[#3a3a45]"
+                  className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold border border-black rounded-md bg-surface hover:bg-black hover:text-white transition-all dark:bg-[#1c1c24] dark:border-[#3a3a45]"
                   title="Copy public profile link"
                 >
-                  {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                  {copied ? <Check size={10} className="text-green-500" /> : <Copy size={10} />}
                   <span>{copied ? "Copied!" : "Share Link"}</span>
                 </button>
               )}
             </div>
 
             {/* COVER IMAGE */}
-            <div className="h-28 w-full border-4 border-black rounded-xl overflow-hidden bg-slate-100 mb-6 relative">
+            <div className="h-24 w-full border-2 border-black rounded-lg overflow-hidden bg-slate-100 mb-4 relative">
               {coverPreview ? (
                 <img
                   src={coverPreview}
@@ -97,15 +97,15 @@ export function ProfileSettingsPage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-60 flex items-center justify-center font-bold text-white text-xs uppercase tracking-wider">
+                <div className="w-full h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-60 flex items-center justify-center font-bold text-white text-[10px] uppercase tracking-wider">
                   No Cover Image
                 </div>
               )}
             </div>
 
             {/* AVATAR */}
-            <div className="flex justify-center mb-6">
-              <div className="h-28 w-28 rounded-2xl border-4 border-black bg-slate-50 overflow-hidden shadow-card dark:border-[#3a3a45] dark:bg-[#1c1c24] flex items-center justify-center">
+            <div className="flex justify-center mb-4">
+              <div className="h-20 w-20 rounded-xl border-2 border-black bg-slate-50 overflow-hidden shadow-sm dark:border-[#3a3a45] dark:bg-[#1c1c24] flex items-center justify-center">
                 {avatarPreview ? (
                   <img
                     src={avatarPreview}
@@ -119,7 +119,7 @@ export function ProfileSettingsPage() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <span className="text-4xl font-black uppercase text-black dark:text-white">
+                  <span className="text-3xl font-black uppercase text-black dark:text-white">
                     {user?.username?.charAt(0) || "U"}
                   </span>
                 )}
