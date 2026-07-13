@@ -691,3 +691,18 @@ CELERY_TASK_STORE_EAGER_RESULT = True
 # Waffle Feature Flags
 WAFFLE_CREATE_MISSING_FLAGS = True
 WAFFLE_FLAG_DEFAULT = False
+
+# Files are assembled outside MEDIA_ROOT and remain inaccessible until clean.
+UPLOAD_QUARANTINE_ROOT = Path(os.getenv("UPLOAD_QUARANTINE_ROOT", BASE_DIR / "quarantine"))
+UPLOAD_MAX_SIZES = {
+    "avatar": int(os.getenv("UPLOAD_AVATAR_MAX_BYTES", str(5 * 1024 * 1024))),
+    "project": int(os.getenv("UPLOAD_PROJECT_MAX_BYTES", str(50 * 1024 * 1024))),
+    "lesson": int(os.getenv("UPLOAD_LESSON_MAX_BYTES", str(50 * 1024 * 1024))),
+}
+UPLOAD_ALLOWED_TYPES = ("jpeg", "png", "webp", "gif", "svg", "pdf", "markdown", "text", "zip", "gzip")
+UPLOAD_AVATAR_ALLOWED_TYPES = ("jpeg", "png", "webp", "gif", "svg")
+
+CLAMAV_HOST = os.getenv("CLAMAV_HOST", "127.0.0.1")
+CLAMAV_PORT = int(os.getenv("CLAMAV_PORT", "3310"))
+CLAMAV_SOCKET = os.getenv("CLAMAV_SOCKET", "")
+UPLOAD_SCAN_FAIL_CLOSED = os.getenv("UPLOAD_SCAN_FAIL_CLOSED", "true").lower() == "true"
