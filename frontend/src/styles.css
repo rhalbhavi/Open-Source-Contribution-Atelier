@@ -28,6 +28,22 @@ body {
   background-size: 30px 30px;
 }
 
+.bg-surface {
+  background-color: #ffffff;
+}
+.bg-surface-lowest {
+  background-color: #ffffff;
+}
+.bg-surface-low {
+  background-color: #f9fafb;
+}
+.bg-surface-high {
+  background-color: #f3f4f6;
+}
+.bg-surface-highest {
+  background-color: #e5e7eb;
+}
+
 html.dark body {
   color-scheme: dark;
   color: var(--dark-text);
