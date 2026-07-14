@@ -700,6 +700,13 @@ CELERY_TASK_STORE_EAGER_RESULT = True
 WAFFLE_CREATE_MISSING_FLAGS = True
 WAFFLE_FLAG_DEFAULT = False
 
+# ──────────────────────────────────────────
+# Meilisearch Configurations
+# ──────────────────────────────────────────
+MEILI_URL = os.getenv("MEILI_URL", "http://localhost:7700")
+MEILI_MASTER_KEY = os.getenv("MEILI_MASTER_KEY", "masterKey123")
+MEILI_INDEX_NAME = os.getenv("MEILI_INDEX_NAME", "search_documents")
+
 # Files are assembled outside MEDIA_ROOT and remain inaccessible until clean.
 UPLOAD_QUARANTINE_ROOT = Path(os.getenv("UPLOAD_QUARANTINE_ROOT", BASE_DIR / "quarantine"))
 UPLOAD_MAX_SIZES = {
@@ -714,3 +721,4 @@ CLAMAV_HOST = os.getenv("CLAMAV_HOST", "127.0.0.1")
 CLAMAV_PORT = int(os.getenv("CLAMAV_PORT", "3310"))
 CLAMAV_SOCKET = os.getenv("CLAMAV_SOCKET", "")
 UPLOAD_SCAN_FAIL_CLOSED = os.getenv("UPLOAD_SCAN_FAIL_CLOSED", "true").lower() == "true"
+
