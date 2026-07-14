@@ -1,5 +1,7 @@
 ## 𐂐 In open source, you usually do not have direct write permissions to edit the main repository of a project. To make changes, you use a **Fork**.
 
+---
+
 <br>
 <div align="center">
   <img width="600" height=auto alt="Untitled design (1)" src="https://github.com/user-attachments/assets/23a980f9-4d45-4d26-9e46-27a3a6e49630" />
