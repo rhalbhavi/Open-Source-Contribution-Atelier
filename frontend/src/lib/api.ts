@@ -1,4 +1,5 @@
 import { enqueueOfflineAction } from "./offlineQueue";
+import { getAccessToken } from "./authToken";
 import toast from "react-hot-toast"; // <-- YEH HUMNE ADD KIYA HAI
 
 const getApiBaseUrl = () => {
@@ -59,15 +60,12 @@ export async function fetchApi(endpoint: string, options: RequestOptions = {}) {
   } = options;
 
   const headers = new Headers(customHeaders);
-  headers.set("Content-Type", "application/json");
+  if (!(config.body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
 
   if (requireAuth) {
-    let token: string | null = null;
-    try {
-      token = localStorage.getItem("accessToken");
-    } catch {
-      // localStorage unavailable (e.g. Safari private mode, SSR)
-    }
+    const token = getAccessToken();
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
@@ -533,7 +531,7 @@ export async function executeTerminalCommand(
 }
 
 export async function exportWorkspaceZip(projectId: string): Promise<void> {
-  const token = localStorage.getItem("accessToken");
+  const token = getAccessToken();
   const response = await fetch(`${API_BASE}/sandbox/projects/${projectId}/export_zip/`, {
     method: "GET",
     headers: {
@@ -560,4 +558,10 @@ export async function exportWorkspaceZip(projectId: string): Promise<void> {
   a.click();
   window.URL.revokeObjectURL(url);
   document.body.removeChild(a);
+}
+
+export function getMediaUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return url;
 }

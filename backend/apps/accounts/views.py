@@ -67,15 +67,16 @@ from .throttles import (
 )
 
 
+def username_from_value(value: str) -> str:
+    """Return a normalized username candidate from a GitHub login or email."""
+    return slugify(value.split("@")[0]) or "user"
+
+
 def unique_username_from_value(value: str) -> str:
-    base = slugify(value.split("@")[0]) or "user"
-    candidate = base
-    suffix = 1
-
-    while User.objects.filter(username=candidate).exists():
-        candidate = f"{base}{suffix}"
-        suffix += 1
-
+    """Return a username candidate, raising when it is already in use."""
+    candidate = username_from_value(value)
+    if User.objects.filter(username__iexact=candidate).exists():
+        raise ValueError("Username is already taken.")
     return candidate
 
 
@@ -165,8 +166,8 @@ class MeView(APIView):
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
         instance.refresh_from_db()
-        if hasattr(instance, "profile"):
-            instance.profile.refresh_from_db()
+        if hasattr(instance, "user_profile"):
+            instance.user_profile.refresh_from_db()
         response_serializer = UserListSerializer(instance, context={"request": request})
         return Response(response_serializer.data)
 
@@ -409,10 +410,24 @@ class GitHubOAuthCallbackView(APIView):
                 )
 
             user = User.objects.filter(email__iexact=email).first()
+            username_source = github_user.get("login") or email
+            github_username = username_from_value(username_source)
+
+            username_conflict = User.objects.filter(
+                username__iexact=github_username
+            )
+            if user is not None:
+                username_conflict = username_conflict.exclude(pk=user.pk)
+
+            if username_conflict.exists():
+                return Response(
+                    {"detail": "Username is already taken."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             if not user:
-                username_source = github_user.get("login") or email
                 user = User.objects.create_user(
-                    username=unique_username_from_value(username_source),
+                    username=github_username,
                     email=email,
                     password=secrets.token_urlsafe(24),
                 )
@@ -557,9 +572,9 @@ class PasswordResetConfirmView(APIView):
 
         user = reset_token.user
         user.set_password(new_password)
-        if hasattr(user, "profile"):
-            user.profile.last_password_change = timezone.now()
-            user.profile.save(update_fields=["last_password_change"])
+        if hasattr(user, "user_profile"):
+            user.user_profile.last_password_change = timezone.now()
+            user.user_profile.save(update_fields=["last_password_change"])
         user.save()
 
         reset_token.is_used = True
