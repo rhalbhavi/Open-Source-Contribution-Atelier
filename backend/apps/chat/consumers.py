@@ -189,6 +189,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             for uid, info in users.items()
         ]
 
+
     async def clear_typing_state(self):
         try:
             await asyncio.sleep(4)  # Short timeout to clear typing state
@@ -263,6 +264,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif action == "send_message":
             content = data.get("message", "")
             if content:
+                is_allowed = await self.check_rate_limit(
+                    f"throttle_chat_ws_{self.user.id}", 30, 60
+                )
+                if not is_allowed:
+                    await self.send(
+                        text_data=json.dumps(
+                            {
+                                "type": "error",
+                                "message": "Rate limit exceeded. Please wait before sending more messages.",
+                            }
+                        )
+                    )
+                    return
+
                 msg = await self.save_message(self.user, self.room_id, content)
                 await self.channel_layer.group_send(
                     self.group_name,
