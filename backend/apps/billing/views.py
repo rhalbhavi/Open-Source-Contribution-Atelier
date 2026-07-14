@@ -34,3 +34,56 @@ class SubscriptionStatusView(views.APIView):
             })
         except CustomerSubscription.DoesNotExist:
             return Response({"active": False, "plan": None})
+
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from .models import OrganizationSponsor, Bounty, BountyClaim
+from .serializers import OrganizationSponsorSerializer, BountySerializer, BountyClaimSerializer
+from .services import payout_bounty
+
+class OrganizationSponsorViewSet(viewsets.ModelViewSet):
+    queryset = OrganizationSponsor.objects.all()
+    serializer_class = OrganizationSponsorSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+class BountyViewSet(viewsets.ModelViewSet):
+    queryset = Bounty.objects.all()
+    serializer_class = BountySerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def claim(self, request, pk=None):
+        bounty = self.get_object()
+        if not bounty.is_active:
+            return Response({"error": "Bounty is no longer active."}, status=400)
+            
+        claim, created = BountyClaim.objects.get_or_create(
+            bounty=bounty,
+            user=request.user
+        )
+        if not created:
+            return Response({"status": "already_claimed", "claim_id": claim.id})
+            
+        return Response({"status": "claimed", "claim_id": claim.id})
+
+class BountyClaimViewSet(viewsets.ModelViewSet):
+    queryset = BountyClaim.objects.all()
+    serializer_class = BountyClaimSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        # Users see their own claims. Admins could see all.
+        return self.queryset.filter(user=self.request.user)
+        
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def approve_payout(self, request, pk=None):
+        claim = self.get_object()
+        if claim.is_approved:
+            return Response({"error": "Already approved."}, status=400)
+            
+        claim = payout_bounty(claim.user, claim.bounty)
+        
+        return Response({
+            "status": "payout_processed",
+            "payout_id": claim.payout_id
+        })
