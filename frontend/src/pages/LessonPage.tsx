@@ -503,11 +503,14 @@ export function LessonPage() {
       nonce: quizNonce, // NEW: Appended
     });
 
-    {isCorrect ? (
-              <span>✅ Correct! Well done!</span>
-            ) : (
-              <span>❌ Incorrect. The correct answer was: {correctAnswer}</span>
-            )}
+    if (isCorrect) {
+      setQuizFeedback("correct");
+      if (lesson.slug) {
+        syncProgress({
+          lesson_slug: lesson.slug,
+          score: lesson.points || 15,
+          completed: true,
+        });
       }
     } else {
       setQuizFeedback("incorrect");
