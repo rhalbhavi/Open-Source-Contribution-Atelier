@@ -17,6 +17,8 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const [isEmailFocused, setIsEmailFocused] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
   const dispatch = useAppDispatch();
@@ -103,6 +105,58 @@ export function LoginPage() {
       subtitle="Sign in to access your dashboard, complete challenges, and track your progress."
     >
       <form className="space-y-5" onSubmit={handleSubmit}>
+        {/* Playful Interactive Robot Mascot */}
+        <div className="flex flex-col items-center justify-center mb-5 select-none animate-fade-in">
+          <div className="relative w-28 h-28 bg-[#FFF5E6] dark:bg-[#201c18] rounded-[2rem] border-4 border-black dark:border-[#4a4238] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-none flex items-center justify-center overflow-hidden transition-all duration-300">
+            {/* Screen Bezel */}
+            <div className="w-20 h-16 bg-[#1a1a24] rounded-2xl border-4 border-black dark:border-[#4a4238] relative flex items-center justify-center overflow-hidden">
+              {isPasswordFocused ? (
+                /* Shy / Covered Screen Face */
+                <div className="flex gap-1.5 animate-bounce">
+                  <span className="text-xl">🙈</span>
+                  <span className="text-xl">🙈</span>
+                </div>
+              ) : (
+                /* Interactive Eyes */
+                <div className="flex justify-between w-12 px-2 relative transition-all duration-150">
+                  <div 
+                    className="w-3.5 h-3.5 bg-cyan-400 rounded-full shadow-[0_0_8px_#22d3ee] transition-all duration-150"
+                    style={{
+                      transform: isEmailFocused 
+                        ? `translate(${Math.min(4, username.length * 0.2) - 2}px, 1px)` 
+                        : 'translate(0px, 0px)'
+                    }}
+                  />
+                  <div 
+                    className="w-3.5 h-3.5 bg-cyan-400 rounded-full shadow-[0_0_8px_#22d3ee] transition-all duration-150"
+                    style={{
+                      transform: isEmailFocused 
+                        ? `translate(${Math.min(4, username.length * 0.2) - 2}px, 1px)` 
+                        : 'translate(0px, 0px)'
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Antenna */}
+            <div className="absolute top-1.5 w-1 h-3 bg-black dark:bg-[#4a4238] rounded-full flex items-center justify-center">
+              <div className="w-2.5 h-2.5 bg-red-400 border-2 border-black rounded-full -mt-2 animate-pulse" />
+            </div>
+
+            {/* Sliding paws that cover eyes */}
+            <div 
+              className="absolute bottom-0 left-0 right-0 flex justify-between px-3 transition-all duration-500 ease-out pointer-events-none"
+              style={{
+                transform: isPasswordFocused ? 'translateY(-14px)' : 'translateY(28px)'
+              }}
+            >
+              <span className="text-2xl rotate-[20deg] drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">🐾</span>
+              <span className="text-2xl rotate-[-20deg] drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">🐾</span>
+            </div>
+          </div>
+        </div>
+
         {error && (
           <div
             role="alert"
@@ -156,6 +210,8 @@ export function LoginPage() {
             placeholder="username or email"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            onFocus={() => setIsEmailFocused(true)}
+            onBlur={() => setIsEmailFocused(false)}
             required
           />
         </div>
@@ -170,6 +226,8 @@ export function LoginPage() {
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onFocus={() => setIsPasswordFocused(true)}
+            onBlur={() => setIsPasswordFocused(false)}
             required
           />
         </div>
