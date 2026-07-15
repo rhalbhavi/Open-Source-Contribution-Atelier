@@ -55,7 +55,7 @@ export async function fetchApi(endpoint: string, options: RequestOptions = {}) {
   const {
     requireAuth = true,
     suppressErrorToast = false,
-    timeoutMs = 15_000,
+    timeoutMs = 3_000,
     maxRetries = 1,
     headers: customHeaders,
     ...config
