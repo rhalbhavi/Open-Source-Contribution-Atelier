@@ -48,7 +48,7 @@ urlpatterns = [
     
     # Recommendations
     path("recommendations/", RecommendationsView.as_view(), name="recommendations"),
-    path('certificate/verify/<str:hash>/', CertificateVerifyView.as_view(), name='certificate-verify'),
+    path('certificate/verify/<str:hash>/', CertificateVerificationView.as_view(), name='certificate-verify'),
     path('daily-stats/', DailyLessonStatsView.as_view(), name='daily-stats'),
     path("feed/", CommunityFeedView.as_view(), name="community-feed"),
     path("community-stats/", CommunityStatsView.as_view(), name="community-stats"),
