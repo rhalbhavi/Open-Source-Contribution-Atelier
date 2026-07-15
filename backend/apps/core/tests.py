@@ -139,3 +139,29 @@ class SoftDeleteFrameworkTests(TestCase):
         # Issue should NOT be deleted
         self.assertEqual(Issue.all_objects.count(), 1)
         self.assertEqual(Issue.deleted_objects.count(), 1)
+
+    def test_n_plus_one_query_detection(self):
+        from nplusone.core.exceptions import NPlusOneError
+        from nplusone.core.profiler import Profiler
+
+        # Create multiple users to avoid single-user caching/optimization
+        users = [
+            User.objects.create_user(username=f"user_{i}", password="password123")
+            for i in range(3)
+        ]
+
+        # Create multiple issues pointing to different users to trigger N+1 scenario
+        for i in range(3):
+            Issue.objects.create(
+                title=f"Test Issue {i}",
+                description="Test Description",
+                assigned_to=users[i],
+                status="open",
+            )
+
+        # Force evaluation of parent query and child queries inside Profiler to allow tracking
+        with self.assertRaises(NPlusOneError):
+            with Profiler():
+                parent_users = list(User.objects.all())
+                for user in parent_users:
+                    _ = list(user.assigned_issues.all())
