@@ -22,7 +22,10 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
 
   /* Reporter: HTML locally, GitHub-friendly list on CI */
+
+  reporter: process.env.CI 
   reporter: process.env.CI
+
     ? [
         ["list"],
         ["json", { outputFile: "playwright-report/results.json" }],
@@ -88,5 +91,12 @@ export default defineConfig({
   },
 
   /* ✅ Added: Test directory for accessibility tests */
+  testMatch: [
+    "**/*.spec.ts",
+    "**/accessibility/**/*.spec.ts",
+  ],
+});
+
   testMatch: ["**/*.spec.ts", "**/accessibility/**/*.spec.ts"],
 });
+
