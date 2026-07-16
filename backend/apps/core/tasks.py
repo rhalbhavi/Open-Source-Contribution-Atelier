@@ -218,3 +218,49 @@ def _purge_for_model(model, threshold_date, batch_size):
         records_deleted=deleted_count,
         duration_seconds=duration,
     )
+
+
+def archive_audit_logs():
+    """
+    Archives AdminAuditLog entries older than 90 days to a JSON file and deletes them.
+    """
+    from apps.core.models import AdminAuditLog
+    from django.conf import settings
+    from django.utils import timezone
+    import os
+    import json
+    from pathlib import Path
+    
+    retention_days = 90
+    cutoff = timezone.now() - timezone.timedelta(days=retention_days)
+    old_logs = AdminAuditLog.objects.filter(timestamp__lt=cutoff)
+    count = old_logs.count()
+    
+    if count == 0:
+        return 0
+        
+    audit_backup_dir = Path(settings.BACKUP_DIR) / "audit_logs"
+    audit_backup_dir.mkdir(parents=True, exist_ok=True)
+    
+    filename = audit_backup_dir / f"audit_archive_{timezone.now().strftime('%Y%m%d_%H%M%S')}.json"
+    
+    logs_data = []
+    for log in old_logs:
+        logs_data.append({
+            "id": log.id,
+            "actor": log.actor.username if log.actor else None,
+            "action": log.action,
+            "target_type": str(log.target_type) if log.target_type else None,
+            "target_id": log.target_id,
+            "details": log.details,
+            "timestamp": log.timestamp.isoformat(),
+            "ip_address": log.ip_address,
+        })
+        
+    with open(filename, "w") as f:
+        json.dump(logs_data, f, indent=2)
+        
+    # Delete the archived logs
+    old_logs.delete()
+    logger.info(f"Archived {count} audit logs to {filename}")
+    return count
