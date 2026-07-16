@@ -29,7 +29,7 @@ fn add(a: i32, b: i32) -> i32 {
 }
 ```
 
-#### Here is the detailed breakdown of how each part of the code works:
+### Here is the detailed breakdown of how each part of the code works:
 
 * **`fn main() { ... }`**
   * This defines the `main` function, which acts as the mandatory entry point for every executable Rust program. When you run the code, execution begins here.
