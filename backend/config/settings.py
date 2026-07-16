@@ -237,6 +237,12 @@ MIDDLEWARE = [
     "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
+if TESTING:
+    INSTALLED_APPS.append("nplusone.ext.django")
+    MIDDLEWARE.insert(0, "nplusone.ext.django.NPlusOneMiddleware")
+    NPLUSONE_RAISE = True
+    SILENCED_SYSTEM_CHECKS = ["perf.E001"]
+
 ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
@@ -392,6 +398,8 @@ REST_FRAMEWORK = {
         "auth_magic_link_verify": os.getenv("RATE_AUTH_MAGIC_LINK_VERIFY", "5/minute"),
         # ── Chat ─────────────────────────────────────────────────────────────
         "chat_message": "30/minute",
+        # ── Events ───────────────────────────────────────────────────────────
+        "events_list": os.getenv("RATE_EVENTS_LIST", "60/minute"),
     },
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -747,4 +755,20 @@ CLAMAV_HOST = os.getenv("CLAMAV_HOST", "127.0.0.1")
 CLAMAV_PORT = int(os.getenv("CLAMAV_PORT", "3310"))
 CLAMAV_SOCKET = os.getenv("CLAMAV_SOCKET", "")
 UPLOAD_SCAN_FAIL_CLOSED = os.getenv("UPLOAD_SCAN_FAIL_CLOSED", "true").lower() == "true"
+
+# ──────────────────────────────────────────
+# Sentry Configuration
+# ──────────────────────────────────────────
+SENTRY_DSN = os.getenv("SENTRY_DSN")
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "1.0")),
+        send_default_pii=False,
+    )
+
 
