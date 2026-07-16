@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from datetime import timedelta
@@ -139,3 +141,72 @@ class SoftDeleteFrameworkTests(TestCase):
         # Issue should NOT be deleted
         self.assertEqual(Issue.all_objects.count(), 1)
         self.assertEqual(Issue.deleted_objects.count(), 1)
+
+
+class DatabaseBackupTests(TestCase):
+    """Tests for backup_database and prune_old_backups tasks."""
+
+    def setUp(self):
+        import tempfile
+        self.tmpdir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    @override_settings(BACKUP_DIR=None)
+    def test_backup_creates_file(self):
+        """backup_database should produce a non-empty file in BACKUP_DIR."""
+        from django.conf import settings as _s
+        _s.BACKUP_DIR = self.tmpdir  # override after decorator
+
+        from apps.core.tasks import backup_database
+        result = backup_database()
+
+        self.assertIsNotNone(result)
+        self.assertTrue(Path(result).exists())
+        self.assertGreater(Path(result).stat().st_size, 0)
+
+    @override_settings(BACKUP_DIR=None, BACKUP_RETENTION_DAYS=30)
+    def test_prune_removes_old_files(self):
+        """prune_old_backups should delete files older than retention window."""
+        from django.conf import settings as _s
+        _s.BACKUP_DIR = self.tmpdir
+        _s.BACKUP_RETENTION_DAYS = 30
+
+        # Create a stale backup (31 days old)
+        old_file = Path(self.tmpdir) / "backup_20000101_000000.json"
+        old_file.write_text("[]")
+        old_mtime = (timezone.now() - timedelta(days=31)).timestamp()
+        os.utime(old_file, (old_mtime, old_mtime))
+
+        from apps.core.tasks import prune_old_backups
+        deleted = prune_old_backups()
+
+        self.assertEqual(deleted, 1)
+        self.assertFalse(old_file.exists())
+
+    @override_settings(BACKUP_DIR=None, BACKUP_RETENTION_DAYS=30)
+    def test_prune_keeps_recent_files(self):
+        """prune_old_backups should NOT delete files within the retention window."""
+        from django.conf import settings as _s
+        _s.BACKUP_DIR = self.tmpdir
+        _s.BACKUP_RETENTION_DAYS = 30
+
+        recent_file = Path(self.tmpdir) / "backup_20991231_000000.json"
+        recent_file.write_text("[]")
+
+        from apps.core.tasks import prune_old_backups
+        deleted = prune_old_backups()
+
+        self.assertEqual(deleted, 0)
+        self.assertTrue(recent_file.exists())
+
+    @override_settings(BACKUP_DIR=None)
+    def test_prune_missing_dir_returns_zero(self):
+        """prune_old_backups should return 0 if the backup dir doesn't exist."""
+        from django.conf import settings as _s
+        _s.BACKUP_DIR = str(Path(self.tmpdir) / "nonexistent")
+
+        from apps.core.tasks import prune_old_backups
+        self.assertEqual(prune_old_backups(), 0)

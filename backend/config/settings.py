@@ -732,3 +732,12 @@ CLAMAV_PORT = int(os.getenv("CLAMAV_PORT", "3310"))
 CLAMAV_SOCKET = os.getenv("CLAMAV_SOCKET", "")
 UPLOAD_SCAN_FAIL_CLOSED = os.getenv("UPLOAD_SCAN_FAIL_CLOSED", "true").lower() == "true"
 
+# ──────────────────────────────────────────
+# Database Backup Configuration
+# ──────────────────────────────────────────
+# Directory where timestamped backup files are written.
+# Override with BACKUP_DIR env var for Docker/production (e.g. a mounted volume).
+BACKUP_DIR = os.getenv("BACKUP_DIR", str(BASE_DIR / "backups"))
+
+# Number of days to keep backup files before pruning.
+BACKUP_RETENTION_DAYS = int(os.getenv("BACKUP_RETENTION_DAYS", "30"))
