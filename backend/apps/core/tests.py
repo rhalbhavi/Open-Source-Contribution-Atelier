@@ -1,12 +1,13 @@
-from django.test import TestCase, override_settings
-from django.utils import timezone
 from datetime import timedelta
-from apps.core.models import PurgeLog
-from apps.dashboard.models import Issue
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.core.cache import caches
+from django.test import TestCase, override_settings
+from django.utils import timezone
 
-from unittest.mock import patch
+from apps.core.models import PurgeLog
+from apps.dashboard.models import Issue
 
 User = get_user_model()
 
@@ -26,6 +27,7 @@ User = get_user_model()
 class MultiLevelCacheTests(TestCase):
     def setUp(self):
         from apps.core.cache import MultiLevelCache
+
         self.cache = MultiLevelCache()
         caches["default"].clear()
         caches["l1_memory"].clear()
@@ -144,13 +146,11 @@ class SoftDeleteFrameworkTests(TestCase):
         from nplusone.core.exceptions import NPlusOneError
         from nplusone.core.profiler import Profiler
 
-        # Create multiple users to avoid single-user caching/optimization
         users = [
             User.objects.create_user(username=f"user_{i}", password="password123")
             for i in range(3)
         ]
 
-        # Create multiple issues pointing to different users to trigger N+1 scenario
         for i in range(3):
             Issue.objects.create(
                 title=f"Test Issue {i}",
@@ -159,9 +159,70 @@ class SoftDeleteFrameworkTests(TestCase):
                 status="open",
             )
 
-        # Force evaluation of parent query and child queries inside Profiler to allow tracking
         with self.assertRaises(NPlusOneError):
             with Profiler():
                 parent_users = list(User.objects.all())
                 for user in parent_users:
                     _ = list(user.assigned_issues.all())
+
+
+class CircuitBreakerTests(TestCase):
+    def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
+
+    def test_circuit_breaker_success_flow(self):
+        from apps.core.resilience import CircuitBreaker
+
+        cb = CircuitBreaker("test_service", failure_threshold=3, recovery_timeout=2)
+
+        self.assertEqual(cb.get_state(), "closed")
+
+        with cb:
+            pass
+
+        self.assertEqual(cb.get_state(), "closed")
+
+    def test_circuit_breaker_failure_flow_and_open(self):
+        from apps.core.resilience import CircuitBreaker, CircuitOpenError
+
+        cb = CircuitBreaker("test_service", failure_threshold=3, recovery_timeout=2)
+
+        for _ in range(3):
+            try:
+                with cb:
+                    raise ValueError("Fail")
+            except ValueError:
+                pass
+
+        self.assertEqual(cb.get_state(), "open")
+
+        with self.assertRaises(CircuitOpenError):
+            with cb:
+                pass
+
+    def test_circuit_breaker_recovery_half_open(self):
+        import time
+
+        from apps.core.resilience import CircuitBreaker
+
+        cb = CircuitBreaker("test_service", failure_threshold=2, recovery_timeout=1)
+
+        for _ in range(2):
+            try:
+                with cb:
+                    raise ValueError("Fail")
+            except ValueError:
+                pass
+
+        self.assertEqual(cb.get_state(), "open")
+
+        time.sleep(1.1)
+
+        self.assertEqual(cb.get_state(), "half_open")
+
+        with cb:
+            pass
+
+        self.assertEqual(cb.get_state(), "closed")
