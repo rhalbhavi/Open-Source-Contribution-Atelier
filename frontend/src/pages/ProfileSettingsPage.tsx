@@ -26,7 +26,7 @@ interface PreviewData {
 }
 
 export function ProfileSettingsPage() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const [previewData, setPreviewData] = useState<PreviewData>({});
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -61,6 +61,14 @@ export function ProfileSettingsPage() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (isLoading || !user) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-black border-t-transparent"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-[1600px] px-6 py-8">
