@@ -50,7 +50,6 @@ export function LoginPage() {
           method: "POST",
           requireAuth: false,
           body: JSON.stringify({ access_token: tokenResponse.access_token }),
-          timeoutMs: 3000,
         });
         login(tokens);
         sessionStorage.setItem("justLoggedIn", "true");
@@ -145,30 +144,19 @@ export function LoginPage() {
             git commit -m "success" 🚀
           </DraggableSticker>
           <DraggableSticker
-            initialX={450}
-            initialY={-120}
+            initialX={-260}
+            initialY={110}
             className="bg-[#6BCB77] text-black rotate-[4deg]"
           >
             100% Merged ✅
           </DraggableSticker>
           <DraggableSticker
-            initialX={470}
-            initialY={320}
+            initialX={-300}
+            initialY={480}
             className="bg-[#FFD93D] text-black rotate-[-10deg]"
           >
             Git expert 👑
           </DraggableSticker>
-        </div>
-
-        {/* Playful Interactive Speech Bubble Sticker */}
-        <div className="flex flex-col items-center justify-center mb-6 select-none animate-fade-in">
-          <div className="relative border-4 border-black bg-yellow-300 dark:bg-[#e6c229] px-4 py-3 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black font-black text-center text-xs flex items-center gap-2 max-w-[280px]">
-            <span className="text-xl animate-bounce">{bubble.emoji}</span>
-            <span>{bubble.text}</span>
-            {/* Little speech bubble triangle arrow */}
-            <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[10px] border-t-black" />
-            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-yellow-300 dark:border-t-[#e6c229]" />
-          </div>
         </div>
 
         {error && (

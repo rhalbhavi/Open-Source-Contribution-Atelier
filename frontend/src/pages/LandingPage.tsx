@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
 import { GitBranch, Moon, Sun } from "lucide-react";
 import { fetchApi } from "../lib/api";
@@ -25,6 +26,7 @@ function getErrorMessage(error: unknown, fallback: string) {
 }
 
 export function LandingPage() {
+  const navigate = useNavigate();
   let login: (tokens: { access: string; refresh: string }) => void = () => {};
   try {
     const auth = useAuth();
@@ -62,7 +64,7 @@ export function LandingPage() {
         body: JSON.stringify({ username: email, password }),
       });
       login(tokens);
-      if (typeof window !== "undefined") window.location.href = "/dashboard";
+      navigate("/dashboard");
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Login failed. Check your credentials."));
     }
@@ -77,7 +79,7 @@ export function LandingPage() {
           body: JSON.stringify({ access_token: tokenResponse.access_token }),
         });
         login(tokens);
-        if (typeof window !== "undefined") window.location.href = "/dashboard";
+        navigate("/dashboard");
       } catch (err: unknown) {
         setError(formatGoogleOAuthError(err, "backend"));
       }
@@ -121,21 +123,21 @@ export function LandingPage() {
         </DraggableSticker>
         <DraggableSticker
           initialX={100}
-          initialY={650}
+          initialY={620}
           className="bg-[#4D96FF] text-white rotate-[8deg]"
         >
           git commit -m "success" 🚀
         </DraggableSticker>
         <DraggableSticker
-          initialX={850}
-          initialY={120}
+          initialX={60}
+          initialY={320}
           className="bg-[#6BCB77] text-black rotate-[4deg]"
         >
           100% Merged ✅
         </DraggableSticker>
         <DraggableSticker
-          initialX={900}
-          initialY={620}
+          initialX={120}
+          initialY={480}
           className="bg-[#FFD93D] text-black rotate-[-10deg]"
         >
           Git expert 👑
@@ -202,16 +204,7 @@ export function LandingPage() {
             </button>
           </div>
 
-          {/* Playful Interactive Speech Bubble Sticker */}
-          <div className="flex flex-col items-center justify-center mb-6 select-none animate-fade-in">
-            <div className="relative border-4 border-black bg-yellow-300 dark:bg-[#e6c229] px-4 py-3 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black font-black text-center text-xs flex items-center gap-2 max-w-[280px]">
-              <span className="text-xl animate-bounce">{bubble.emoji}</span>
-              <span>{bubble.text}</span>
-              {/* Little speech bubble triangle arrow */}
-              <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[10px] border-t-black" />
-              <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-yellow-300 dark:border-t-[#e6c229]" />
-            </div>
-          </div>
+
 
           <h2 className="text-xl font-black mb-4 text-center text-text dark:text-[#f0ebe2]">
             {authRole === "student"
