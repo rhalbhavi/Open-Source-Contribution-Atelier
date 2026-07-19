@@ -65,8 +65,12 @@
 
 /* Custom animations for Git Reels */
 @keyframes typing {
-  from { width: 0 }
-  to { width: 100% }
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
 .animate-typing {
   animation: typing 3s steps(35, end) infinite;
@@ -87,8 +91,12 @@
 }
 
 @keyframes marquee {
-  0% { transform: translateX(10%); }
-  100% { transform: translateX(-100%); }
+  0% {
+    transform: translateX(10%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
 }
 .animate-marquee {
   display: inline-block;

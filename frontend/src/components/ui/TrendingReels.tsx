@@ -40,7 +40,8 @@ const REELS_DATA: Reel[] = [
   {
     id: 1,
     title: "How to Undo Your Last Commit 🤫",
-    description: "Accidentally committed secret keys or bugged code? Here is the cleanest way to undo it without losing your changes!",
+    description:
+      "Accidentally committed secret keys or bugged code? Here is the cleanest way to undo it without losing your changes!",
     tags: ["#git", "#programming", "#hacks", "#dev"],
     likes: 4239,
     commentsCount: 84,
@@ -51,15 +52,31 @@ const REELS_DATA: Reel[] = [
     },
     audio: "Git Beats - Original Audio",
     commentsList: [
-      { username: "code_novice", avatar: "🧑‍💻", text: "This literally saved me 10 minutes ago, thank you!", time: "2h ago" },
-      { username: "git_guru", avatar: "🛡️", text: "Make sure you use --soft, otherwise --hard deletes everything!", time: "5h ago" },
-      { username: "stack_tracer", avatar: "🐛", text: "Great animation, super simple to understand.", time: "1d ago" },
+      {
+        username: "code_novice",
+        avatar: "🧑‍💻",
+        text: "This literally saved me 10 minutes ago, thank you!",
+        time: "2h ago",
+      },
+      {
+        username: "git_guru",
+        avatar: "🛡️",
+        text: "Make sure you use --soft, otherwise --hard deletes everything!",
+        time: "5h ago",
+      },
+      {
+        username: "stack_tracer",
+        avatar: "🐛",
+        text: "Great animation, super simple to understand.",
+        time: "1d ago",
+      },
     ],
   },
   {
     id: 2,
     title: "Git Stash: Save it for Later! 📦",
-    description: "Need to switch branches but not ready to commit your half-baked features? Stash them in the Git Vault and pop them back later!",
+    description:
+      "Need to switch branches but not ready to commit your half-baked features? Stash them in the Git Vault and pop them back later!",
     tags: ["#coding", "#productivity", "#gitstash", "#tips"],
     likes: 2841,
     commentsCount: 42,
@@ -70,14 +87,25 @@ const REELS_DATA: Reel[] = [
     },
     audio: "Stash & Dash - Synthwave Remix",
     commentsList: [
-      { username: "git_newbie", avatar: "🐱", text: "Is there a stash limit? I have like 20 stashes lol.", time: "1h ago" },
-      { username: "senior_dev", avatar: "🧓", text: "Pro tip: use `git stash save \"name\"` to keep them organized!", time: "3h ago" },
+      {
+        username: "git_newbie",
+        avatar: "🐱",
+        text: "Is there a stash limit? I have like 20 stashes lol.",
+        time: "1h ago",
+      },
+      {
+        username: "senior_dev",
+        avatar: "🧓",
+        text: 'Pro tip: use `git stash save "name"` to keep them organized!',
+        time: "3h ago",
+      },
     ],
   },
   {
     id: 3,
     title: "Merge Conflicts: Accepted Both! ⚔️",
-    description: "Stop sweating when merge conflicts hit. Here is how conflict markers look and how to easily merge conflicting code paths.",
+    description:
+      "Stop sweating when merge conflicts hit. Here is how conflict markers look and how to easily merge conflicting code paths.",
     tags: ["#gitmerge", "#teamwork", "#programming", "#conflict"],
     likes: 5122,
     commentsCount: 156,
@@ -88,15 +116,31 @@ const REELS_DATA: Reel[] = [
     },
     audio: "Harmony & Git - Instrumental",
     commentsList: [
-      { username: "dev_dilemma", avatar: "🤯", text: "Merge conflicts give me trust issues, accept both is the safest path!", time: "30m ago" },
-      { username: "pr_reviewer", avatar: "🕵️", text: "Or just rebase and clean it up commit by commit. 😉", time: "2h ago" },
-      { username: "junior_101", avatar: "🐣", text: "I deleted the <<< and === manually, is that normal?", time: "4h ago" },
+      {
+        username: "dev_dilemma",
+        avatar: "🤯",
+        text: "Merge conflicts give me trust issues, accept both is the safest path!",
+        time: "30m ago",
+      },
+      {
+        username: "pr_reviewer",
+        avatar: "🕵️",
+        text: "Or just rebase and clean it up commit by commit. 😉",
+        time: "2h ago",
+      },
+      {
+        username: "junior_101",
+        avatar: "🐣",
+        text: "I deleted the <<< and === manually, is that normal?",
+        time: "4h ago",
+      },
     ],
   },
   {
     id: 4,
     title: "Git Reflog: The Ultimate Time Machine 🕰️",
-    description: "Did you use git reset --hard and lose a branch? Git Reflog records every single action. Never lose code again!",
+    description:
+      "Did you use git reset --hard and lose a branch? Git Reflog records every single action. Never lose code again!",
     tags: ["#gitreflog", "#timetravel", "#sysadmin", "#database"],
     likes: 3904,
     commentsCount: 92,
@@ -107,8 +151,18 @@ const REELS_DATA: Reel[] = [
     },
     audio: "Interstellar Git - Lofi",
     commentsList: [
-      { username: "reflog_fan", avatar: "🕶️", text: "Reflog is the absolute best safety net in development.", time: "4h ago" },
-      { username: "dev_ops", avatar: "🐳", text: "Saved my production hotfix yesterday. A must-know command.", time: "8h ago" },
+      {
+        username: "reflog_fan",
+        avatar: "🕶️",
+        text: "Reflog is the absolute best safety net in development.",
+        time: "4h ago",
+      },
+      {
+        username: "dev_ops",
+        avatar: "🐳",
+        text: "Saved my production hotfix yesterday. A must-know command.",
+        time: "8h ago",
+      },
     ],
   },
 ];
@@ -123,20 +177,28 @@ export function TrendingReels() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
-  const [likesState, setLikesState] = useState<Record<number, { count: number; liked: boolean }>>(
-    REELS_DATA.reduce((acc, r) => ({ ...acc, [r.id]: { count: r.likes, liked: false } }), {})
+  const [likesState, setLikesState] = useState<
+    Record<number, { count: number; liked: boolean }>
+  >(
+    REELS_DATA.reduce(
+      (acc, r) => ({ ...acc, [r.id]: { count: r.likes, liked: false } }),
+      {},
+    ),
   );
   const [isFollowing, setIsFollowing] = useState<Record<number, boolean>>({});
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState<Record<number, Comment[]>>(
-    REELS_DATA.reduce((acc, r) => ({ ...acc, [r.id]: r.commentsList }), {})
+    REELS_DATA.reduce((acc, r) => ({ ...acc, [r.id]: r.commentsList }), {}),
   );
   const [heartPops, setHeartPops] = useState<HeartPop[]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const activeReel = REELS_DATA[activeIdx];
-  const activeLikes = likesState[activeReel.id] || { count: activeReel.likes, liked: false };
+  const activeLikes = likesState[activeReel.id] || {
+    count: activeReel.likes,
+    liked: false,
+  };
 
   // Autoplay / Progress bar logic
   useEffect(() => {
@@ -165,7 +227,9 @@ export function TrendingReels() {
   };
 
   const handlePrev = () => {
-    setActiveIdx((current) => (current - 1 + REELS_DATA.length) % REELS_DATA.length);
+    setActiveIdx(
+      (current) => (current - 1 + REELS_DATA.length) % REELS_DATA.length,
+    );
   };
 
   const handleTogglePlay = () => {
@@ -175,7 +239,7 @@ export function TrendingReels() {
   const handleLike = (e: React.MouseEvent) => {
     const reelId = activeReel.id;
     const currentState = likesState[reelId];
-    
+
     // Spawn floating heart burst animation
     const rect = e.currentTarget.getBoundingClientRect();
     const newPop = {
@@ -249,21 +313,29 @@ export function TrendingReels() {
               <span className="h-2.5 w-2.5 rounded-full bg-[#EF4444]"></span>
               <span className="h-2.5 w-2.5 rounded-full bg-[#F59E0B]"></span>
               <span className="h-2.5 w-2.5 rounded-full bg-[#10B981]"></span>
-              <span className="ml-2 font-bold select-none text-white/40">git-terminal-tip</span>
+              <span className="ml-2 font-bold select-none text-white/40">
+                git-terminal-tip
+              </span>
             </div>
-            
+
             <div className="space-y-3">
               <div>
-                <span className="text-[#34D399] select-none">~/atelier-project $</span>
-                <span className="text-white ml-2 animate-pulse">git commit -m "add key"</span>
+                <span className="text-[#34D399] select-none">
+                  ~/atelier-project $
+                </span>
+                <span className="text-white ml-2 animate-pulse">
+                  git commit -m "add key"
+                </span>
               </div>
               <div className="text-white/60">
                 [main 8f19da2] add key
                 <br /> 1 file changed, 2 insertions(+)
               </div>
-              
+
               <div className="pt-2">
-                <span className="text-[#34D399] select-none">~/atelier-project $</span>
+                <span className="text-[#34D399] select-none">
+                  ~/atelier-project $
+                </span>
                 <span className="text-white ml-2 border-r-2 border-white animate-typing inline-block overflow-hidden whitespace-nowrap">
                   git reset HEAD~1 --soft
                 </span>
@@ -277,8 +349,7 @@ export function TrendingReels() {
                   ✓ Commit deleted from history!
                   <br />
                   ✓ All files safe & kept in Staged area!
-                  <br />
-                  ✓ Secrets removed from Git index!
+                  <br />✓ Secrets removed from Git index!
                 </div>
               </div>
             </div>
@@ -300,7 +371,9 @@ export function TrendingReels() {
                   <div className="h-1.5 w-6 bg-white/20 rounded mt-1"></div>
                   <div className="h-1.5 w-8 bg-[#60A5FA] rounded mt-1 animate-pulse"></div>
                 </div>
-                <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider">Workspace</span>
+                <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider">
+                  Workspace
+                </span>
               </div>
 
               {/* Transfer Arrow Line */}
@@ -316,18 +389,28 @@ export function TrendingReels() {
                     1
                   </div>
                 </div>
-                <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider">Stash Stack</span>
+                <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider">
+                  Stash Stack
+                </span>
               </div>
             </div>
 
             <div className="mt-8 space-y-2 w-full">
               <div className="flex items-center gap-2 px-3 py-2 border-2 border-black bg-[#1E1B4B] rounded-xl">
-                <span className="font-mono text-[#818CF8] font-bold">git stash</span>
-                <span className="text-[10px] text-white/70">→ Slides files into vault</span>
+                <span className="font-mono text-[#818CF8] font-bold">
+                  git stash
+                </span>
+                <span className="text-[10px] text-white/70">
+                  → Slides files into vault
+                </span>
               </div>
               <div className="flex items-center gap-2 px-3 py-2 border-2 border-black bg-[#1E1B4B] rounded-xl">
-                <span className="font-mono text-[#818CF8] font-bold">git stash pop</span>
-                <span className="text-[10px] text-white/70">→ Restores back to workspace</span>
+                <span className="font-mono text-[#818CF8] font-bold">
+                  git stash pop
+                </span>
+                <span className="text-[10px] text-white/70">
+                  → Restores back to workspace
+                </span>
               </div>
             </div>
           </div>
@@ -339,21 +422,27 @@ export function TrendingReels() {
           <div className="absolute inset-0 bg-[#1E1E1E] flex flex-col p-4 text-xs font-mono text-gray-300">
             <div className="flex justify-between items-center pb-2 mb-4 border-b border-gray-800 text-[10px] text-gray-500">
               <span>📄 app/index.js</span>
-              <span className="text-yellow-500 font-bold">⚠️ CONFLICT (content)</span>
+              <span className="text-yellow-500 font-bold">
+                ⚠️ CONFLICT (content)
+              </span>
             </div>
 
             <div className="space-y-1.5 leading-relaxed text-[11px]">
               <div className="text-red-400 bg-red-950/20 border-l-2 border-red-500 px-2 py-0.5">
                 {"<<<<<<< HEAD (Current Change)"}
-                <div className="text-white font-bold ml-2">const mode = "light_mode";</div>
+                <div className="text-white font-bold ml-2">
+                  const mode = "light_mode";
+                </div>
               </div>
-              
+
               <div className="text-gray-500 border-l-2 border-gray-600 px-2 py-0.5 select-none">
                 {"======="}
               </div>
 
               <div className="text-blue-400 bg-blue-950/20 border-l-2 border-blue-500 px-2 py-0.5">
-                <div className="text-white font-bold ml-2">const mode = "dark_mode";</div>
+                <div className="text-white font-bold ml-2">
+                  const mode = "dark_mode";
+                </div>
                 {">>>>>>> master (Incoming Change)"}
               </div>
             </div>
@@ -392,7 +481,9 @@ export function TrendingReels() {
                   C1
                 </div>
                 <div>
-                  <div className="text-white font-bold text-[10px]">HEAD@{0}: commit: Add Login Page</div>
+                  <div className="text-white font-bold text-[10px]">
+                    HEAD@{0}: commit: Add Login Page
+                  </div>
                   <div className="text-white/40 text-[9px]">Hash: 7a5f93</div>
                 </div>
               </div>
@@ -402,8 +493,12 @@ export function TrendingReels() {
                   RM
                 </div>
                 <div>
-                  <div className="text-red-400 font-bold text-[10px]">HEAD@{1}: checkout: moving from main to dev</div>
-                  <div className="text-white/40 text-[9px]">Branch checkout triggered</div>
+                  <div className="text-red-400 font-bold text-[10px]">
+                    HEAD@{1}: checkout: moving from main to dev
+                  </div>
+                  <div className="text-white/40 text-[9px]">
+                    Branch checkout triggered
+                  </div>
                 </div>
               </div>
 
@@ -412,18 +507,21 @@ export function TrendingReels() {
                   C2
                 </div>
                 <div>
-                  <div className="text-white/60 text-[10px]">HEAD@{2}: commit: fix settings layout</div>
+                  <div className="text-white/60 text-[10px]">
+                    HEAD@{2}: commit: fix settings layout
+                  </div>
                   <div className="text-white/40 text-[9px]">Hash: b51ad8</div>
                 </div>
               </div>
             </div>
 
             <div className="mt-5 p-2 bg-[#1E293B] border-2 border-black rounded-lg">
-              <div className="text-[#34D399] font-bold text-[10px]">~/project $ git checkout b51ad8</div>
+              <div className="text-[#34D399] font-bold text-[10px]">
+                ~/project $ git checkout b51ad8
+              </div>
               <div className="text-white/50 text-[9px] mt-1 leading-relaxed">
                 ✓ Checkout back to lost commit!
-                <br />
-                ✓ Branch fully restored!
+                <br />✓ Branch fully restored!
               </div>
             </div>
           </div>
@@ -450,7 +548,8 @@ export function TrendingReels() {
           </h2>
 
           <p className="text-lg font-bold text-[#4B5563] dark:text-[#A1A1AA] max-w-xl mx-auto lg:mx-0">
-            Swipe through short-form, bite-sized visual animations to master complex Git workflows under 10 seconds!
+            Swipe through short-form, bite-sized visual animations to master
+            complex Git workflows under 10 seconds!
           </p>
 
           {/* Interactive Navigation Widgets */}
@@ -462,7 +561,7 @@ export function TrendingReels() {
             >
               <ChevronLeft size={24} />
             </button>
-            
+
             <button
               onClick={handleTogglePlay}
               className="px-6 py-3 bg-[#FFD93D] border-4 border-black text-black font-black uppercase text-sm rounded-xl shadow-card-sm hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-2 cursor-pointer"
@@ -489,7 +588,10 @@ export function TrendingReels() {
         </div>
 
         {/* RIGHT COLUMN: Smartphone Reel Card Mockup */}
-        <div className="w-full max-w-[340px] aspect-[9/16] relative mx-auto" ref={containerRef}>
+        <div
+          className="w-full max-w-[340px] aspect-[9/16] relative mx-auto"
+          ref={containerRef}
+        >
           {/* External Phone Shell Frame */}
           <div className="absolute inset-0 rounded-[3rem] border-8 border-black bg-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col justify-between relative select-none">
             {/* Upper camera notch */}
@@ -510,10 +612,14 @@ export function TrendingReels() {
                     {activeReel.creator.avatar}
                   </div>
                   <div>
-                    <span className="font-black text-xs">@{activeReel.creator.username}</span>
-                    <span className="block text-[8px] font-bold text-white/50">{activeReel.creator.role}</span>
+                    <span className="font-black text-xs">
+                      @{activeReel.creator.username}
+                    </span>
+                    <span className="block text-[8px] font-bold text-white/50">
+                      {activeReel.creator.role}
+                    </span>
                   </div>
-                  
+
                   {/* Follow Button */}
                   <button
                     onClick={handleToggleFollow}
@@ -559,11 +665,19 @@ export function TrendingReels() {
             {/* Top segmented progress bars */}
             <div className="absolute top-9 left-4 right-4 z-40 flex gap-1.5">
               {REELS_DATA.map((r, i) => (
-                <div key={r.id} className="flex-1 h-1 bg-white/30 rounded overflow-hidden">
+                <div
+                  key={r.id}
+                  className="flex-1 h-1 bg-white/30 rounded overflow-hidden"
+                >
                   <div
                     className="h-full bg-[#FFD93D] transition-all"
                     style={{
-                      width: i === activeIdx ? `${progress}%` : i < activeIdx ? "100%" : "0%",
+                      width:
+                        i === activeIdx
+                          ? `${progress}%`
+                          : i < activeIdx
+                            ? "100%"
+                            : "0%",
                     }}
                   ></div>
                 </div>
@@ -594,7 +708,10 @@ export function TrendingReels() {
                     : "bg-white text-black dark:bg-[#1E1E24] dark:text-white"
                 }`}
               >
-                <Heart size={20} fill={activeLikes.liked ? "currentColor" : "none"} />
+                <Heart
+                  size={20}
+                  fill={activeLikes.liked ? "currentColor" : "none"}
+                />
               </button>
               <span className="text-[10px] font-black text-black dark:text-white mt-1">
                 {activeLikes.count}
@@ -643,14 +760,19 @@ export function TrendingReels() {
             {/* Comments List */}
             <div className="max-h-[300px] overflow-y-auto space-y-4 mb-4 pr-1 text-slate-800 dark:text-slate-100">
               {(comments[activeReel.id] || []).map((c, i) => (
-                <div key={i} className="flex gap-3 items-start text-xs border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div
+                  key={i}
+                  className="flex gap-3 items-start text-xs border-b border-slate-100 dark:border-slate-800 pb-3"
+                >
                   <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-sm">
                     {c.avatar}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-1.5">
                       <span className="font-black">@{c.username}</span>
-                      <span className="text-[10px] text-slate-400 font-bold">{c.time}</span>
+                      <span className="text-[10px] text-slate-400 font-bold">
+                        {c.time}
+                      </span>
                     </div>
                     <p className="mt-1 text-slate-600 dark:text-slate-350 font-semibold leading-relaxed">
                       {c.text}

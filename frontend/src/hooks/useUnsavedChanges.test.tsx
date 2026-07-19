@@ -14,7 +14,9 @@ describe("useUnsavedChanges", () => {
       }, []);
       return <>{node}</>;
     };
-    const router = createMemoryRouter([{ path: "/", element: <ChildrenRenderer /> }]);
+    const router = createMemoryRouter([
+      { path: "/", element: <ChildrenRenderer /> },
+    ]);
     return ({ children }: { children: React.ReactNode }) => {
       React.useEffect(() => {
         setChildren?.(children);
@@ -32,16 +34,22 @@ describe("useUnsavedChanges", () => {
       {
         initialProps: { isDirty: false },
         wrapper: getWrapper(),
-      }
+      },
     );
 
-    expect(addSpy).not.toHaveBeenCalledWith("beforeunload", expect.any(Function));
+    expect(addSpy).not.toHaveBeenCalledWith(
+      "beforeunload",
+      expect.any(Function),
+    );
 
     rerender({ isDirty: true });
     expect(addSpy).toHaveBeenCalledWith("beforeunload", expect.any(Function));
 
     unmount();
-    expect(removeSpy).toHaveBeenCalledWith("beforeunload", expect.any(Function));
+    expect(removeSpy).toHaveBeenCalledWith(
+      "beforeunload",
+      expect.any(Function),
+    );
   });
 
   it("returns isBlocked false when not within a data router", () => {
