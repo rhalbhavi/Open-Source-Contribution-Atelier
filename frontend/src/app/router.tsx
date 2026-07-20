@@ -128,6 +128,12 @@ const NotificationPreferencesPage = lazy(() =>
   })),
 );
 
+const DigestPage = lazy(() =>
+  import("../pages/notifications/DigestPage").then((module) => ({
+    default: module.default,
+  })),
+);
+
 const PricingPage = lazy(() =>
   import("../pages/PricingPage").then((module) => ({
     default: module.PricingPage,
@@ -587,6 +593,15 @@ export function AppRouter() {
           />
 
           <Route path="/docs/api" element={<ApiDocsPage />} />
+          <Route
+            path="/notifications/digest"
+            element={
+              <ProtectedRoute>
+                <DigestPage />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/settings/billing"
             element={
