@@ -205,6 +205,13 @@ const MergeConflictScenarioBuilderPage = lazy(() =>
     default: module.MergeConflictScenarioBuilderPage,
   })),
 );
+
+const PerformanceDashboardPage = lazy(() =>
+  import("../pages/admin/PerformanceDashboardPage").then((module) => ({
+    default: module.PerformanceDashboardPage,
+  })),
+);
+
 /*
  * These pages use default exports, so they can be passed directly
  * to React.lazy().
@@ -549,6 +556,15 @@ export function AppRouter() {
             element={
               <ProtectedRoute>
                 <ModerationDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/performance"
+            element={
+              <ProtectedRoute>
+                <PerformanceDashboardPage />
               </ProtectedRoute>
             }
           />
