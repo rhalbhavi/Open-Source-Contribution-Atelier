@@ -773,3 +773,16 @@ if SENTRY_DSN:
 # ──────────────────────────────────────────
 AUDIT_RETENTION_DAYS = int(os.getenv("AUDIT_RETENTION_DAYS", "90"))
 AUDIT_ARCHIVE_DIR = os.getenv("AUDIT_ARCHIVE_DIR", str(BASE_DIR / "archives" / "audit"))
+
+# ──────────────────────────────────────────
+# Content Security Policy (CSP)
+# ──────────────────────────────────────────
+CONTENT_SECURITY_POLICY = (
+    "default-src 'self'; "
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+    "style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' data: https:; "
+    "font-src 'self' data: https:; "
+    "object-src 'none'; "
+    "frame-ancestors 'none';"
+)

@@ -8,6 +8,7 @@ import {
   splitTextWithGlossary,
   type GlossaryEntry,
 } from "../../lib/glossary";
+import DOMPurify from "dompurify";
 
 interface MarkdownRendererProps {
   content: string;
@@ -51,6 +52,15 @@ export function MarkdownRenderer({
   content,
   loadGlossaryFn = loadGlossary,
 }: MarkdownRendererProps) {
+  const sanitizedContent = DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: [
+      "b", "i", "em", "strong", "a", "img", "p", "div", "span",
+      "code", "pre", "h1", "h2", "h3", "h4", "h5", "h6",
+      "ul", "ol", "li", "blockquote", "hr", "br",
+      "table", "thead", "tbody", "tr", "th", "td",
+    ],
+    KEEP_CONTENT: true,
+  });
   const [glossary, setGlossary] = useState<GlossaryEntry[]>([]);
   const [activeTerm, setActiveTerm] = useState<GlossaryEntry | null>(null);
 
@@ -138,10 +148,21 @@ export function MarkdownRenderer({
         const linkMatch = part.match(/\[(.*?)\]\((.*?)\)/);
         if (linkMatch) {
           const [, label, href] = linkMatch;
+          // Validate and sanitize URLs
+          let safeHref = href;
+          const lowerHref = href.toLowerCase().trim();
+          if (
+            lowerHref.startsWith("javascript:") ||
+            lowerHref.startsWith("vbscript:") ||
+            lowerHref.startsWith("data:")
+          ) {
+            safeHref = "#";
+          }
+
           return [
             <a
               key={i}
-              href={href}
+              href={safeHref}
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary underline font-bold hover:text-accent transition-colors"
@@ -156,7 +177,7 @@ export function MarkdownRenderer({
   };
 
   // Split content into blocks (paragraphs, code blocks, headers, lists, blockquotes, tables)
-  const lines = content.split("\n");
+  const lines = sanitizedContent.split("\n");
   const blocks: React.ReactNode[] = [];
   let index = 0;
 
@@ -489,10 +510,20 @@ export function MarkdownRenderer({
       const width = widthMatch ? widthMatch[1] : undefined;
       const height = heightMatch ? heightMatch[1] : undefined;
 
+      let safeSrc = src;
+      const lowerSrc = src.toLowerCase().trim();
+      if (
+        lowerSrc.startsWith("javascript:") ||
+        lowerSrc.startsWith("vbscript:") ||
+        lowerSrc.startsWith("data:text/html")
+      ) {
+        safeSrc = "";
+      }
+
       blocks.push(
         <div key={index} className="my-4 flex justify-center">
           <img
-            src={src}
+            src={safeSrc}
             alt={alt}
             width={width}
             height={height}
@@ -508,10 +539,21 @@ export function MarkdownRenderer({
     if (mdImgMatch) {
       const alt = mdImgMatch[1];
       const src = mdImgMatch[2];
+
+      let safeSrc = src;
+      const lowerSrc = src.toLowerCase().trim();
+      if (
+        lowerSrc.startsWith("javascript:") ||
+        lowerSrc.startsWith("vbscript:") ||
+        lowerSrc.startsWith("data:text/html")
+      ) {
+        safeSrc = "";
+      }
+
       blocks.push(
         <div key={index} className="my-4 flex justify-center">
           <img
-            src={src}
+            src={safeSrc}
             alt={alt}
             className="rounded-2xl border-4 border-black dark:border-[#2e2924] shadow-card-sm max-w-full h-auto"
           />
