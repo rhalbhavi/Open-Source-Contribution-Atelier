@@ -199,6 +199,21 @@ INSTALLED_APPS = [
     "waffle",
     "apps.plugins.apps.PluginsConfig",
     "apps.oauth",
+    # ── Scaffolded Apps ────────────────────────────────────────────────────────
+    "apps.burnout_detection",
+    "apps.advanced_search",
+    "apps.feature_requests",
+    "apps.issue_categorization",
+    "apps.issue_quality_ci",
+    "apps.issue_routing",
+    "apps.onboarding",
+    "apps.pr_review_bot",
+    "apps.skills_matching",
+    "apps.experiments",
+    "apps.feed",
+    "apps.dx_testing",
+    "apps.issue_quality",
+    "apps.ml_triage",
 ]
 
 # Cache backends are selected with channel layers below (Redis or LocMem fallback).
