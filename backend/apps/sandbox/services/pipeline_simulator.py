@@ -1,6 +1,7 @@
 """
 CI/CD Pipeline Simulation Service with Input Sanitization, Command Whitelisting, and Log Output Protection.
 """
+
 import random
 import re
 from datetime import datetime, timezone
@@ -137,7 +138,9 @@ def _simulate_security_logs(code: str) -> tuple[str, str]:
     if re.search(r"os\.system|subprocess\.call", code):
         issues.append("MEDIUM Shell injection risk – use subprocess.run with list args")
     if re.search(r"pickle\.loads?", code):
-        issues.append("HIGH   Unsafe deserialization via pickle – never deserialize untrusted data")
+        issues.append(
+            "HIGH   Unsafe deserialization via pickle – never deserialize untrusted data"
+        )
     if re.search(r"password\s*=\s*['\"]", code, re.IGNORECASE):
         issues.append("CRITICAL Hardcoded credential detected in source code")
 
@@ -145,7 +148,11 @@ def _simulate_security_logs(code: str) -> tuple[str, str]:
         log_lines = ["Running bandit security audit...", ""]
         for issue in issues:
             log_lines.append(f"  >> {issue}")
-        log_lines += ["", f"Security audit found {len(issues)} issue(s). Please review.", ""]
+        log_lines += [
+            "",
+            f"Security audit found {len(issues)} issue(s). Please review.",
+            "",
+        ]
         return "failed", sanitize_log_output("\n".join(log_lines))
 
     log = "Running bandit security audit...\n\nNo issues identified.\n\nTest passed: 0 issues\n"
